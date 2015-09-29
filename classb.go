@@ -3,7 +3,7 @@ package geo
 import "fmt"
 
 type Cylinder struct {
-	EndDistanceNM int  // Nautical Miles. Start distance is end of prev cylinder (or origin)
+	EndDistanceNM int  // Nautical Miles. Start distance is end of inner cylinder (or origin)
 	Floor      int     // In hundreds of feet
 	Ceil       int     // In hundreds of feet
 }
@@ -21,6 +21,8 @@ type ClassBMap struct {
 	Name     string
 }
 
+// Walk treads a circle around the map until we find the sector that matches our bearing, and
+// then walks out from the middle until we find the zone of the sector we lie within.
 func (m ClassBMap) Walk(distNM, bearing float64) (floor,ceil int, inRange bool) {
 	inRange = false
 	// Walk the sectors until we find the first one which contains our bearing
@@ -35,13 +37,15 @@ func (m ClassBMap) Walk(distNM, bearing float64) (floor,ceil int, inRange bool) 
 				}
 			}
 		}
-		return // We are past the outer limits of this sector's cylinders
+		return // We are past the outer limits of this sector's cylinders; not in range
 	}
 
 	panic(fmt.Sprintf("Bad ClassBMap, we fell off the end, given bearing=%f", bearing))
 	return
 }
 
+// ClassBRange works out if a position is within range of the given map; and if so, what the
+// altitude limits are at that position.
 func (m ClassBMap)ClassBRange(pos Latlong) (floor,ceil float64, inRange bool) {
 	floor,ceil,inRange = 0.0, 0.0, false
 	distNM := pos.DistNM(m.Center)
@@ -56,7 +60,7 @@ func (m ClassBMap)ClassBRange(pos Latlong) (floor,ceil float64, inRange bool) {
 	return
 }
 
-// A trackpoint, annotated with ClassB analysis
+// The output after ClassB analysis of a single position+altitude
 type TPClassBAnalysis struct {
 	// The verdict
 	WithinRange         bool    // If we're not within range, the rest has no meaning.
@@ -69,9 +73,6 @@ type TPClassBAnalysis struct {
 	DistNM              float64 // Seeing as we've calculated it :)
 
 	AllowThisPoint      bool    // If true, this point is not a violation, regardless of data
-	
-	// Old value, for posterity
-	OldOutcome          int
 }
 func (a TPClassBAnalysis)IsViolation() bool {
 	if a.AllowThisPoint { return false }
@@ -79,8 +80,6 @@ func (a TPClassBAnalysis)IsViolation() bool {
 	return a.VerticalDisposition < 0
 }
 
-// Note: we're ignoring speed limits, and violation detection on a per-point basis; violations
-// are detected by a state machine that walks successive outcomes from this function.
 func (m ClassBMap)ClassBPointAnalysis(pos Latlong, speed float64, altitude float64, o *TPClassBAnalysis) {
 	distNM := pos.DistNM(m.Center)
 	bearing := pos.BearingTowards(m.Center)
