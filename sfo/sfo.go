@@ -9,6 +9,8 @@ var (
 	KLatlongSJC = geo.Latlong{37.3639472, -121.9289375}	
 	KLatlongSERFR1 = geo.Latlong{37.221516, -121.992987} // This is the centerpoint for maps viewport
 
+	KBoxSFO120K = KLatlongSFO.Box(80,80)  // This is the box in which we look for new flights
+	
 	KFixes = map[string]geo.Latlong{
 		"SERFR": geo.Latlong{36.0683056, -121.3646639},
 		"NRRLI": geo.Latlong{36.4956000, -121.6994000},
