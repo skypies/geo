@@ -10,8 +10,10 @@ var (
 	KLatlongSERFR1 = geo.Latlong{37.221516, -121.992987} // This is the centerpoint for maps viewport
 
 	KBoxSFO120K = KLatlongSFO.Box(80,80)  // This is the box in which we look for new flights
-	
+
+	// http://www.myaviationinfo.com/FixState.php?FixState=CALIFORNIA
 	KFixes = map[string]geo.Latlong{
+		// SERFR1
 		"SERFR": geo.Latlong{36.0683056, -121.3646639},
 		"NRRLI": geo.Latlong{36.4956000, -121.6994000},
 		"WWAVS": geo.Latlong{36.7415306, -121.8942333},
@@ -23,6 +25,13 @@ var (
 		"THEEZ": geo.Latlong{37.5034694, -122.4247528},
 		"WESLA": geo.Latlong{37.6643722, -122.4802917},
 		"MVRKK": geo.Latlong{37.7369722, -122.4544500},
+
+		// BRIXX
+		"CORKK": geo.Latlong{37.7335889, -122.4975500},
+		"BRIXX": geo.Latlong{37.6178444, -122.3745278},
+		"LUYTA": geo.Latlong{37.2948889, -122.2045528},
+		"JILNA": geo.Latlong{37.2488056, -122.1495000},
+		"YADUT": geo.Latlong{37.2039889, -122.0232778},
 	}
 
 	SFOClassBMap = geo.ClassBMap{
