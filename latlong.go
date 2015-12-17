@@ -34,6 +34,15 @@ func (from Latlong)Dist3(to Latlong, altitude float64) float64 {
 	return math.Sqrt(horizDist*horizDist + vertDist*vertDist)
 }
 
+func (from Latlong)InterpolateTo(to Latlong, ratio float64) Latlong {
+	interpFunc := func(from,to float64) float64 { return from + (to-from)*ratio }
+
+	return Latlong{
+		Lat: interpFunc(from.Lat, to.Lat),
+		Long: interpFunc(from.Long, to.Long),
+	}
+}
+
 // }}}
 // {{{ type LatlongBox
 

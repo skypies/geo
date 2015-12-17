@@ -1,8 +1,16 @@
 package geo
+// go test -v github.com/skypies/geo
 
 import "fmt"
 import "math"
 import "testing"
+
+const (
+	kLatSFO  = 37.6188172
+	kLongSFO = -122.3754281
+	kLatSJC  = 37.3639472
+	kLongSJC = -121.9289375
+)
 
 var (
 	// All these data have (long,lat) pairs - don't get confused !
@@ -60,6 +68,25 @@ var (
 		{ 37,-120, 36,-120,   36.5,-121,   89.3844},
 		{ 36,-120, 37,-119,   36.5,-119.4,  7.1325},
 	}
+
+	distalongline = [][]float64{
+		// long,lat,  long,lat,   long,lat,   dist
+		{  -120,35,   -118,35,    -121,35,   -0.50 }, // Horizontal line
+		{  -120,35,   -118,35,    -120,35,    0.00 },
+		{  -120,35,   -118,35,    -118.5,35,  0.75 },
+		{  -120,35,   -118,35,    -116,35,    2.00 },
+		{  -120,35,   -118,35,    -119,37,    0.50 }, // Point doesn't lie on line - lies above it
+
+		{  -120,35,   -120,39,    -120,35,    0.00 }, // Vertical line
+		{  -120,35,   -120,39,    -120,38,    0.75 },
+		{  -120,35,   -120,39,    -120,47,    3.00 },
+
+		{  -120,35,   -118,37,    -121,34,   -0.50 }, // at 45 degrees
+		{  -120,35,   -118,37,    -120,35,    0.00 },
+		{  -120,35,   -118,37,    -119,36,    0.50 },
+		{  -120,35,   -118,37,    -117,38,    1.50 },
+
+	}
 )
 
 func floatEq(x,y float64) bool { return (math.Abs(x - y) <= 0.001) }
@@ -96,6 +123,16 @@ func TestForwardAzimuth(t *testing.T) {
 	}
 }
 
+func TestLatlongBoxContains(t *testing.T) {
+	for i,vals := range containsPoints {
+		p := Latlong{vals[0], vals[1]}
+		actual := containsBox.Contains(p)
+		if actual != (vals[2]>0) {
+			t.Errorf("[%d] Contains gave %v, expected %v", i, actual, (vals[2]>0))
+		}
+	}
+}
+/*
 func TestToSFO(t *testing.T) {
 	for i,vals := range toSFO {
 		from := Latlong{vals[1], vals[0]}
@@ -107,16 +144,6 @@ func TestToSFO(t *testing.T) {
 			t.Errorf("[%d] ToSFO gave bearing of '%f', wanted %f", i, actualBearing, vals[3])
 		}
 	}	
-}
-
-func TestLatlongBoxContains(t *testing.T) {
-	for i,vals := range containsPoints {
-		p := Latlong{vals[0], vals[1]}
-		actual := containsBox.Contains(p)
-		if actual != (vals[2]>0) {
-			t.Errorf("[%d] Contains gave %v, expected %v", i, actual, (vals[2]>0))
-		}
-	}
 }
 
 func TestSFOClassBRange(t *testing.T) {
@@ -134,12 +161,12 @@ func TestSFOClassBRange(t *testing.T) {
 		}
 	}
 }
-
+*/
 func TestClosestDistance(t *testing.T) {
 	for i,vals := range closestDistance {
 		lFrom,lTo,pos := Latlong{vals[0],vals[1]}, Latlong{vals[2],vals[3]}, Latlong{vals[4],vals[5]}
 		line := lFrom.BuildLine(lTo)
-		perp := line.buildPerpendicular(pos)
+		perp := line.PerpendicularTo(pos)
 		closestPoint,parallel := line.intersectByLineEquations(perp)
 		dist := line.ClosestDistance(pos)
 		if math.Abs(dist - vals[6]) > 0.001 {
@@ -147,6 +174,19 @@ func TestClosestDistance(t *testing.T) {
 		}
 		fmt.Printf("Line:%s, pos    :%s\nPerp:%s, closest:%s (parallel=%v)\ndist=%.2f\n--\n",
 			line, pos, perp, closestPoint, parallel, dist)
+	}
+}
+
+func TestDistAlongLine(t *testing.T) {
+	for i,vals := range distalongline {
+		lFrom,lTo,pos := Latlong{vals[0],vals[1]}, Latlong{vals[2],vals[3]}, Latlong{vals[4],vals[5]}
+		line := lFrom.BuildLine(lTo)
+		actual := line.DistAlongLine(pos)
+		expected := vals[6]
+		if math.Abs(actual-expected) > 0.001 {
+			t.Errorf("[%d] distalongline was %f, expected %f", i, actual, expected)
+		}
+		fmt.Printf("Line:%s, pos:%s, dist:%.3f\n", line, pos, actual)
 	}
 }
 

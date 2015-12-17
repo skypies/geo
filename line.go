@@ -51,29 +51,12 @@ func (from Latlong)BuildLine(to Latlong) LatlongLine {
 
 // }}}
 
-// {{{ line.y
+// {{{ line.y, line.x
 
-// Apply equation of line
+// Apply equation of line: y=mx+b
 func (line LatlongLine)y(x float64) float64 { return line.m * x + line.b }
-
-// }}}
-// {{{ line.buildPerpendicular
-
-func (orig LatlongLine)buildPerpendicular(pos Latlong) LatlongLine {
-	// The perpendicular has a gradient that is the negative inverse of the orig line
-	m := -1 / orig.m
-	perp := LatlongLine{
-		From: pos,
-		m: m,
-		b: calcB(m, pos),
-	}
-
-	// Both lines have equations, and anchor points at l.From; we can intersect them to
-	// derive the endpoint of the perpendicular. No chance of them being parallel :)
-	perp.To,_ = orig.intersectByLineEquations(perp)
-
-	return perp
-}
+func (line LatlongLine)x(y float64) float64 { return (y - line.b) / line.m }
+//func (line LatlongLine)scalar(pos Latlong) float64 {}
 
 // }}}
 // {{{ line.intersectByLineEqutions
@@ -110,11 +93,30 @@ func (l1 LatlongLine)intersectByLineEquations(l2 LatlongLine) (Latlong, bool) {
 
 // }}}
 
+// {{{ line.PerpendicularTo
+
+func (orig LatlongLine)PerpendicularTo(pos Latlong) LatlongLine {
+	// The perpendicular has a gradient that is the negative inverse of the orig line
+	m := -1 / orig.m
+	perp := LatlongLine{
+		From: pos,
+		m: m,
+		b: calcB(m, pos),
+	}
+
+	// Both lines have equations, and anchor points at l.From; we can intersect them to
+	// derive the endpoint of the perpendicular. No chance of them being parallel :)
+	perp.To,_ = orig.intersectByLineEquations(perp)
+
+	return perp
+}
+
+// }}}
 // {{{ line.ClosestTo
 
 // Presumes infinite line
 func (line LatlongLine)ClosestTo(pos Latlong) Latlong {
-	perp := line.buildPerpendicular(pos) // end point of this is the intersection point
+	perp := line.PerpendicularTo(pos) // end point of this is the intersection point
 	return perp.To
 }
 
@@ -123,6 +125,30 @@ func (line LatlongLine)ClosestTo(pos Latlong) Latlong {
 
 func (line LatlongLine)ClosestDistance(pos Latlong) float64 {
 	return pos.Dist(line.ClosestTo(pos))
+}
+
+// }}}
+// {{{ line.DistAlongLine
+
+// If one unit is the dist between .From and .To, and .From is zero; how far along the line is pos?
+func (line LatlongLine)DistAlongLine(pos Latlong) float64 {
+	// Todo: project pos onto the line itself, before doing the d1,d2,dPos stuff
+	// That means a perpendicular; measure its length and discard if close to zero
+
+	// The perpendicular will connect 'pos' to 'line'; the perp's endpoint will lie on 'line'
+	// (although, latlong geometry is skew, so this is never really 'perpendicular' :/
+	perp := line.PerpendicularTo(pos)
+	
+	// If line is more horizontal than vertical, project onto X axis; else Y
+	d1,d2,dPos := 0.0,0.0,0.0
+	if math.Abs(line.m) < 1.0 {
+		d1,d2,dPos = line.From.x(),line.To.x(),perp.To.x()
+	} else {
+		d1,d2,dPos = line.From.y(),line.To.y(),perp.To.y()
+	}
+
+	// d1 represents 0.0; d2 represents 1.0. Where is pos ?
+	return (dPos - d1) / (d2 - d1)
 }
 
 // }}}
