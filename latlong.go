@@ -10,6 +10,13 @@ type Latlong struct {
 }
 func (ll Latlong)String() string { return fmt.Sprintf("(%.4f,%.4f)", ll.Lat, ll.Long) }
 
+// ApproxDist treats the latlongs as y,x coords, and returns the 'latlong dist'
+func (from Latlong)LatlongDist(to Latlong) float64 {
+	x,y := (to.Long - from.Long), (to.Lat - from.Lat)
+	return math.Sqrt(x*x + y*y)
+}
+
+// Dist is the great-circle distance, in KM
 func (from Latlong)Dist(to Latlong) float64 {
 	return haversine(from.Long,from.Lat,  to.Long,to.Lat)
 }

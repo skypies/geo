@@ -14,6 +14,19 @@ type LatlongBox struct {
 }
 func (box LatlongBox)String() string { return fmt.Sprintf("%s-%s", box.SW, box.NE) }
 
+// Derive the other two corners on demand
+func (box LatlongBox)SE() Latlong { return Latlong{Lat:box.SW.Lat , Long:box.NE.Long} }
+func (box LatlongBox)NW() Latlong { return Latlong{Lat:box.NE.Lat , Long:box.SW.Long} }
+
+func (box LatlongBox)LongWidth() float64 { return box.NE.Long - box.SW.Long }
+func (box LatlongBox)LatHeight() float64 { return box.NE.Lat - box.SW.Lat }
+
+func (box LatlongBox)Center() Latlong {
+	return Latlong{
+		Lat: (box.SW.Lat + box.NE.Lat) / 2.0,
+		Long: (box.SW.Long + box.NE.Long) / 2.0,
+	}
+}
 
 // Returns a box, centred on ll, that is of size (width,height)
 func (ll Latlong)Box(widthKm,heightKm float64) LatlongBox {
