@@ -62,6 +62,23 @@ func (box LatlongBox)Contains(l Latlong) bool {
 	return true
 }
 
+func (box LatlongBox)LatRange() Float64Range { return Float64Range{box.SW.Lat, box.NE.Lat} }
+func (box LatlongBox)LongRange() Float64Range { return Float64Range{box.SW.Long, box.NE.Long} }
+
+// We take some liberties with the outcome value; don't rely on it except for .IsDisjoint()
+// float is the fraction of b1 that overlaps with b2
+func (b1 LatlongBox)OverlapsWith(b2 LatlongBox) (OverlapOutcome,float64) {
+	latDisp := RangeOverlap(b1.LatRange(), b2.LatRange())
+	longDisp := RangeOverlap(b1.LongRange(), b2.LongRange())
+	
+	if latDisp.IsDisjoint() || longDisp.IsDisjoint() {
+		return DisjointR2ComesAfter, 0.0
+	}
+
+	// Really, we should figure out the actual amount of overlap; but for now, hardwire 1.0
+	return OverlapR2StraddlesStart, 1.0
+}
+
 // {{{ -------------------------={ E N D }=----------------------------------
 
 // Local variables:

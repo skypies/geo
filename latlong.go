@@ -10,18 +10,28 @@ type Latlong struct {
 }
 func (ll Latlong)String() string { return fmt.Sprintf("(%.4f,%.4f)", ll.Lat, ll.Long) }
 
+// We often treat latlong as a simple (x,y) space. We take Long as x, to make horiz/vert look normal
+func (ll Latlong)x() float64 { return ll.Long }
+func (ll Latlong)y() float64 { return ll.Lat }
+
 // ApproxDist treats the latlongs as y,x coords, and returns the 'latlong dist'
 func (from Latlong)LatlongDist(to Latlong) float64 {
 	x,y := (to.Long - from.Long), (to.Lat - from.Lat)
 	return math.Sqrt(x*x + y*y)
 }
 
+// This probably isn't what you want
+func (from Latlong)Equal(to Latlong) bool {
+	return from.Lat == to.Lat && from.Long == to.Long
+}
+
 // Dist is the great-circle distance, in KM
-func (from Latlong)Dist(to Latlong) float64 {
+func (from Latlong)Dist(to Latlong) float64 { return from.DistKM(to) }
+func (from Latlong)DistKM(to Latlong) float64 {
 	return haversine(from.Long,from.Lat,  to.Long,to.Lat)
 }
 func (from Latlong)DistNM(to Latlong) float64 {
-	return from.Dist(to) * kNauticalMilePerKM
+	return from.DistKM(to) * kNauticalMilePerKM
 }
 
 func (from Latlong)BearingTowards(to Latlong) float64 {

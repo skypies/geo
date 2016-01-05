@@ -5,10 +5,6 @@ import(
 	"math"
 )
 
-// All of this works in simple (x,y) space. We take Long as x, to make horiz/vert look normal
-func (ll Latlong)x() float64 { return ll.Long }
-func (ll Latlong)y() float64 { return ll.Lat }
-
 const kLineSnapKM = 0.3  // How far a trackpoint can be from a line, and still be on that line
 const KLineSnapKM = 0.3  // How far a trackpoint can be from a line, and still be on that line
 
