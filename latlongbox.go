@@ -54,12 +54,20 @@ func (from Latlong)BoxTo(to Latlong) LatlongBox {
 	return box
 }
 
-func (box LatlongBox)Contains(l Latlong) bool {
-	if (l.Long < box.SW.Long) { return false }
-	if (l.Lat  < box.SW.Lat ) { return false }
-	if (l.Long > box.NE.Long) { return false }
-	if (l.Lat  > box.NE.Lat ) { return false }
+func (box LatlongBox)Contains(pos Latlong) bool {
+	if (pos.Long < box.SW.Long) { return false }
+	if (pos.Lat  < box.SW.Lat ) { return false }
+	if (pos.Long > box.NE.Long) { return false }
+	if (pos.Lat  > box.NE.Lat ) { return false }
 	return true
+}
+
+// Enclose increases the sixe of the box to include the point, if it doesn't fit
+func (box *LatlongBox)Enclose(pos Latlong) {
+	if (pos.Long < box.SW.Long) { box.SW.Long = pos.Long }
+	if (pos.Lat  < box.SW.Lat ) { box.SW.Lat = pos.Lat }
+	if (pos.Long > box.NE.Long) { box.NE.Long = pos.Long }
+	if (pos.Lat  > box.NE.Lat ) { box.NE.Lat = pos.Lat }
 }
 
 func (box LatlongBox)LatRange() Float64Range { return Float64Range{box.SW.Lat, box.NE.Lat} }

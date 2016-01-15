@@ -12,21 +12,47 @@ var (
 	timeSeqs = [][][]int{
 /*
 		// Basic flip
-		{ {0,    5,   10 },               // A: |----|----|
-			{   2,    7    }, },            // B:   |----|
-*/
+		{ {0,    5,   10 },                      // A: |----|----|
+			{   2,    7    },                      // B:   |----|
+			{1} },
+			
 		// Longer flip
-		{ {0,    5,   10,   15 },            // A: |----|----|----|
-			{   2,   7,     12}, },            // B:   |----|----|
+		{ {0,    5,   10,   15 },                // A: |----|----|----|
+			{   2,   7,     12},                   // B:   |----|----|
+			{1} },
 
-		/*
 		// We fully contain
-		{ {0,    5,           13    },    // A: |----|--------|
-			{   2,     7,   10,     15}, }, // B:   |----|----|----|
-		// Tracks perfectly align
-		{ {0,    5,   10    },            // A: |-----|----|
-			{   2, 5,      12 }, },         // B:   |---|------|
+		{ {0,    5,           13    },           // A: |----|--------|
+			{   2,     7,   10,     15},           // B:   |----|----|----|
+			{1} },
+
+		// We fully contain multiples
+		{ {0,    5,                14,   18  },  // A: |----|----------|---|
+			{   2,     7,   10,   13,  15},        // B:   |----|---|--|---|
+			{1} },
+
+		// Tracks perfectly align (short and long)
+		{ {0,    5,   10    },                   // A: |-----|----|
+			{   2, 5,      12 },                   // B:   |---|------|
+			{1} },
+		{ {0,    5,   10,    14    },            // A: |-----|----|---|
+			{   2, 5,      12,    16 },            // B:   |---|------|---|
+			{1} },
+
+		// No overlap !
+		{ {0,    5,   10            },           // A: |-----|----|
+			{               12,    16 },           // B:              |---|
+			{0},}, // false
+
+		// Some under-run
+		{ {0,    5,   10,    14,     18},        // A: |-----|----|---|---|
+			{               12,    16 },           // B:             |---|
+			{1} }, // true
 */
+		// Some over-run
+		{ {0,    5,   10,    14,     18},        // A: |-----|----|---|---|
+			{   3,    8                  },         // B:    |---|
+			{1} }, // true
 	}
 )
 
@@ -44,35 +70,18 @@ func timeSeqToBoxSlice(k []int) []LatlongTimeBox {
 	return boxes
 }
 
-func TestCompareBox(t *testing.T) {
-	t.Errorf("BAH")
-}
-
-func TestCompareBoxSlice(t *testing.T) {
-	for _,vals := range timeSeqs {
+func TestCompareBoxSliceBasicZigzag(t *testing.T) {
+	for i,vals := range timeSeqs {
 		b1 := timeSeqToBoxSlice(vals[0])
 		b2 := timeSeqToBoxSlice(vals[1])
+		expected := (vals[2][0] > 0)
 		overlaps,conf,debug := CompareBoxSlices(&b1,&b2)
-		fmt.Printf("** Debug (%v,%.2f):-\n%s", overlaps, conf, debug)
-	}
-	t.Errorf("BAH")
-}
-
-
-/*
-func TestDistAlongLine(t *testing.T) {
-	for i,vals := range distalongline {
-		lFrom,lTo,pos := Latlong{vals[0],vals[1]}, Latlong{vals[2],vals[3]}, Latlong{vals[4],vals[5]}
-		line := lFrom.BuildLine(lTo)
-		actual := line.DistAlongLine(pos)
-		expected := vals[6]
-		if math.Abs(actual-expected) > 0.001 {
-			t.Errorf("[%d] distalongline was %f, expected %f", i, actual, expected)
+		fmt.Printf("** Debug (%v,%.2f):-\n%s\n", overlaps, conf, debug)
+		if overlaps != expected {
+			t.Errorf("%,1f\n%s\n[% d] overlap said %v, expected %v", conf, debug, i, overlaps, expected)
 		}
-		fmt.Printf("Line:%s, pos:%s, dist:%.3f\n", line, pos, actual)
 	}
 }
-*/
 
 // {{{ -------------------------={ E N D }=----------------------------------
 
