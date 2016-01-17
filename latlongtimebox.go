@@ -2,6 +2,7 @@ package geo
 
 import (
 	"fmt"
+	"math"
 	"time"
 )
 
@@ -9,12 +10,25 @@ import (
 type LatlongTimeBox struct {
 	LatlongBox   // embedded
 	Start,End    time.Time
-	I,J          int       // range of indices of trackpoints that generated the box
+	HeadingDelta float64 // How much the heading altered during this box
+	I,J          int     // range of indices of trackpoints that generated the box
+
+	// These values are used to decide if a box is too approximate to be safe to compare
+	Source               string // too hard to backtrack when debugging, just say so here
+	Interpolated         bool // The box was interpolated, so might be pretty bogus
+	RunLength            int  // how many boxes were in this run of interpolation
+	CentroidHeadingDelta float64  // This is fiddly; see below
+	Debug                string
 }
 
 func (tbox LatlongTimeBox)String() string {
-	return fmt.Sprintf("{%3d,%3d} %s-%s, %s[+%s]", tbox.I, tbox.J, tbox.SW, tbox.NE,
-		tbox.Start.Format("15:04:05.999999999"), tbox.End.Sub(tbox.Start))
+	str := fmt.Sprintf("{%3d,%3d} %s+%5.4f,%5.4f, %-12.12s[+%s], %3.0fdeg [%s]", tbox.I, tbox.J,
+		tbox.SW, (tbox.NE.Lat - tbox.SW.Lat), (tbox.NE.Long - tbox.SW.Long), 
+		tbox.Start.Format("15:04:05.999"), tbox.End.Sub(tbox.Start), tbox.HeadingDelta, tbox.Source)
+	if tbox.Interpolated {
+		str += fmt.Sprintf(" InterpDelta:%3.0fdeg, n=%d", tbox.CentroidHeadingDelta, tbox.RunLength)
+	}
+	return str
 }
 
 // {{{ AsTimeline
@@ -77,7 +91,7 @@ func LoggedCompare(nFlips int, tA,tB *[]LatlongTimeBox, iA,iB int, prefix string
 
 // }}}
 
-// {{{ tbox.Grow
+// {{{ tbox.Enclose
 
 func (tb *LatlongTimeBox)Enclose(p Latlong, t time.Time) {
 	tb.LatlongBox.Enclose(p)
@@ -119,11 +133,46 @@ func (tb1 LatlongTimeBox)SpaceCompare(tb2 LatlongTimeBox) bool {
 
 // }}}
 
+// {{{ boxesShouldBeCompared
+
+// Some boxes are sketchier than others, especially if they were interpolated across gaps in data.
+func boxesShouldBeCompared(b1, b2 LatlongTimeBox) bool {
+	return boxShouldBeCompared(b1) && boxShouldBeCompared(b2)
+}
+
+// 1. If a box implies a large change in heading (HeadingDeviation) - or
+// the centre of the box is off to the side of where the heading
+// currently points (CentroidDeviation) - then the interpolation is
+// likely ropey, so we can't usefully compare the box for a time/space
+// overlap.
+//
+// 2. If the box is part of an interpolation run of >2 boxes, then
+// bail altogether. It turned out that tracks with different amounts
+// of interpolation could have pretty linear (non-curvey)
+// interpolation tracks, but which didn't entirely overlap thanks to
+// the 'sawtooth' nature of the boxes leaving some smaller boxes
+// orphaned. So when comparing against a run of boxes, give up.
+const (
+	maxCentroidDeviation = 40.0
+	maxHeadingDeviation = 40.0
+)
+func boxShouldBeCompared(b LatlongTimeBox) bool {
+	if b.Interpolated {
+		if math.Abs(b.CentroidHeadingDelta) > maxCentroidDeviation { return false }
+		if math.Abs(b.HeadingDelta) > maxHeadingDeviation { return false }
+		if b.RunLength > 2 { return false } // harsh ... but fair
+	}
+	return true
+}
+
+// }}}
 // {{{ BoxResult{}, BoxSliceResult{}
 
 type BoxResult struct {
 	NumTimeOverlaps      int   // How many boxes, from the other track, overlapped in time
 	NumTimeSpaceOverlaps int   // How many boxes, from the other track, overlapped in time and space
+	NumIgnores           int   // How many comparisons we ignored, because of sketchy interpolation
+	TimeOverlapIndices []int   // Which boxes from the other track we have Time-only overlaps
 }
 
 type BoxSliceResult struct {
@@ -131,12 +180,14 @@ type BoxSliceResult struct {
 	NumBoxes                   int
 	NumBoxesJustTimeOverlap    int
 	NumBoxesTimeSpaceOverlap   int
+	NumBoxesIgnored            int
   BadBoxIndices            []int   // For debugging; which boxes had just time overlap
+	BadBoxOtherIndices     [][]int   // And for each such box, which boxes in other track it messed
 }
 
 func (r BoxSliceResult)String() string {
-	str := fmt.Sprintf("--{N=%d, t=%d, t+s=%d}--\n", r.NumBoxes,
-		r.NumBoxesJustTimeOverlap, r.NumBoxesTimeSpaceOverlap)
+	str := fmt.Sprintf("--{N=%d, t=%d, t+s=%d, i=%d}--\n", r.NumBoxes,
+		r.NumBoxesJustTimeOverlap, r.NumBoxesTimeSpaceOverlap, r.NumBoxesIgnored)
 	for i,br := range r.B {
 		str += fmt.Sprintf(" [%3d] t=%2d t+s=%2d\n", i,
 			br.NumTimeSpaceOverlaps, br.NumTimeSpaceOverlaps)
@@ -149,6 +200,7 @@ func NewResults(b *[]LatlongTimeBox) BoxSliceResult {
 		B: make([]BoxResult, len(*b)),
 		NumBoxes: len(*b),
 		BadBoxIndices: []int{},
+		BadBoxOtherIndices: [][]int{},
 	}
 }
 
@@ -160,6 +212,10 @@ func (r *BoxSliceResult)Finalize() {
 		} else if br.NumTimeOverlaps>0 {
 			r.NumBoxesJustTimeOverlap++
 			r.BadBoxIndices = append(r.BadBoxIndices, i)
+			r.BadBoxOtherIndices = append(r.BadBoxOtherIndices, br.TimeOverlapIndices)
+		}
+		if br.NumIgnores > 0 {
+			r.NumBoxesIgnored++
 		}
 	}
 }
@@ -242,20 +298,32 @@ outerLoop:
 			// tA:    |========|-----|-----|-----|
 			// tB:       |=|--
 			if(debug){str += "* enclosed case; curr-A fully encloses curr-B\n"}
-			rA.B[iA].NumTimeOverlaps++
-			rB.B[iB].NumTimeOverlaps++
 
-			// Now space-compare iA with iB (log scores in both).
-			spaceOverlap,cDebug := LoggedCompare(nFlips, tA, tB, iA, iB, "--- ")
-			_=cDebug
-			//str += cDebug
-			if spaceOverlap {
-				rA.B[iA].NumTimeSpaceOverlaps++
-				rB.B[iB].NumTimeSpaceOverlaps++
+			// When we're dealing with tracks that have interpolated boxes along curves - and perhaps
+			// taken crazy shortcuts - we should just ignore the comparison.
+			scoreThis := boxesShouldBeCompared((*tA)[iA], (*tB)[iB])
+			if scoreThis {
+				rA.B[iA].NumTimeOverlaps++
+				rB.B[iB].NumTimeOverlaps++
+			
+				// Now space-compare iA with iB (log scores in both).
+				spaceOverlap,_ := LoggedCompare(nFlips, tA, tB, iA, iB, "--- ")
+				if spaceOverlap {
+					rA.B[iA].NumTimeSpaceOverlaps++
+					rB.B[iB].NumTimeSpaceOverlaps++
+				} else {
+					// No space overlap. Track the failed comparison for later.
+					rA.B[iA].TimeOverlapIndices = append(rA.B[iA].TimeOverlapIndices, iB)
+					rB.B[iB].TimeOverlapIndices = append(rB.B[iB].TimeOverlapIndices, iA)
+					//str += "================={ DOOM2 }======================\n"
+					//str += fmt.Sprintf("= currA: %d, %s\n= currB: %d, %s\n", iA, (*tA)[iA], iB, (*tB)[iB]
+				}
 			} else {
-				//str += "================={ DOOM2 }======================\n"
-				//str += fmt.Sprintf("= currA: %d, %s\n= currB: %d, %s\n", iA, (*tA)[iA], iB, (*tB)[iB]
+				if(debug){str += fmt.Sprintf("* skipped a compare, [%d/%d]\n", iA, iB)}
+				rA.B[iA].NumIgnores++
+				rB.B[iB].NumIgnores++
 			}
+
 			// Move along to the next box in B
 			iB++
 			if iB>=len(*tB) { break outerLoop }
@@ -280,19 +348,27 @@ outerLoop:
 				str += "* default case; A and B have partial overlap, and B straddles the end of A\n"
 			}
 
-			rA.B[iA].NumTimeOverlaps++
-			rB.B[iB].NumTimeOverlaps++
+			scoreThis := boxesShouldBeCompared((*tA)[iA], (*tB)[iB])
+			if scoreThis {			
+				rA.B[iA].NumTimeOverlaps++
+				rB.B[iB].NumTimeOverlaps++
 
-			// Now space-compare iA with iB (log scores in both).
-			spaceOverlap,cDebug := LoggedCompare(nFlips, tA, tB, iA, iB, "--- ")
-			_=cDebug
-			//str += cDebug
-			if spaceOverlap {
-				rA.B[iA].NumTimeSpaceOverlaps++
-				rB.B[iB].NumTimeSpaceOverlaps++
+				// Now space-compare iA with iB (log scores in both).
+				spaceOverlap,_ := LoggedCompare(nFlips, tA, tB, iA, iB, "--- ")
+				if spaceOverlap && scoreThis {
+					rA.B[iA].NumTimeSpaceOverlaps++
+					rB.B[iB].NumTimeSpaceOverlaps++
+				} else {
+					// No space overlap. Track the failed comparison for later.
+					rA.B[iA].TimeOverlapIndices = append(rA.B[iA].TimeOverlapIndices, iB)
+					rB.B[iB].TimeOverlapIndices = append(rB.B[iB].TimeOverlapIndices, iA)
+					//str += "================={ DOOM }======================\n"
+					//str += fmt.Sprintf("= currA: %d, %s\n= currB: %d, %s\n", iA, (*tA)[iA], iB, (*tB)[iB])
+				}
 			} else {
-				//str += "================={ DOOM }======================\n"
-				//str += fmt.Sprintf("= currA: %d, %s\n= currB: %d, %s\n", iA, (*tA)[iA], iB, (*tB)[iB])
+				rA.B[iA].NumIgnores++
+				rB.B[iB].NumIgnores++
+				if(debug){str += fmt.Sprintf("* skipped a compare, [%d/%d]\n", iA, iB)}
 			}
 
 			// Move along one box on track A ...
@@ -313,18 +389,26 @@ outerLoop:
 	r2.Finalize()
 
 	str += "**** Outcome\n"
-	
+
 	if r1.NumBoxesJustTimeOverlap > 0 || r2.NumBoxesJustTimeOverlap > 0 {
 		// Boxes that overlap in time, but not in space, are bad. For now, tolerate none of these.
 		overlaps, conf = false, 0.0
 
-		for _,boxIndex := range r1.BadBoxIndices {
-			str += fmt.Sprintf("* r1 bad box %d - tp[%d,%d]\n", boxIndex,
-				(*b1)[boxIndex].I, (*b1)[boxIndex].J)
+		for j,boxIndex := range r1.BadBoxIndices {
+			str += fmt.Sprintf("* r1 bad box %3d - %s\n%s", boxIndex, (*b1)[boxIndex],
+				(*b1)[boxIndex].Debug )
+			for _,otherBoxIndex := range r1.BadBoxOtherIndices[j] {
+				str += fmt.Sprintf("**  otherbox %3d - %s\n%s", otherBoxIndex, (*b2)[otherBoxIndex],
+					(*b2)[otherBoxIndex].Debug )
+			}
 		}
-		for _,boxIndex := range r2.BadBoxIndices {
-			str += fmt.Sprintf("* r2 bad box %d - tp[%d,%d]\n", boxIndex,
-				(*b2)[boxIndex].I, (*b2)[boxIndex].J)
+		for j,boxIndex := range r2.BadBoxIndices {
+			str += fmt.Sprintf("* r2 bad box %3d - %s\n%s", boxIndex, (*b2)[boxIndex],
+				(*b2)[boxIndex].Debug )
+			for _,otherBoxIndex := range r2.BadBoxOtherIndices[j] {
+				str += fmt.Sprintf("**  otherbox %3d - %s\n%s", otherBoxIndex, (*b1)[otherBoxIndex],
+					(*b1)[otherBoxIndex].Debug )
+			}
 		}
 
 		str += "* some time-only overlaps found, rejecting\n"
@@ -343,9 +427,9 @@ outerLoop:
 	//str += fmt.Sprintf("* overlaps=%v (confidence=%.2f)\n", overlaps, conf)
 	//str += fmt.Sprintf("***** Results\n* Track 1: %s* Track 2: %s", r1, r2)
 	
-	str = fmt.Sprintf("tA[%d:+%d-%d],tB[%d:+%d-%d]=%.2f,%v",
-		r1.NumBoxes, r1.NumBoxesTimeSpaceOverlap, r1.NumBoxesJustTimeOverlap,
-		r2.NumBoxes, r2.NumBoxesTimeSpaceOverlap, r2.NumBoxesJustTimeOverlap,
+	str += fmt.Sprintf("tA[%d:+%d-%d(%d?)],tB[%d:+%d-%d(%d?)]=%.2f,%v",
+		r1.NumBoxes, r1.NumBoxesTimeSpaceOverlap, r1.NumBoxesJustTimeOverlap, r1.NumBoxesIgnored,
+		r2.NumBoxes, r2.NumBoxesTimeSpaceOverlap, r2.NumBoxesJustTimeOverlap, r2.NumBoxesIgnored,
 		conf, overlaps)
 		
 	return
