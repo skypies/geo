@@ -87,6 +87,29 @@ func (b1 LatlongBox)OverlapsWith(b2 LatlongBox) (OverlapOutcome,float64) {
 	return OverlapR2StraddlesStart, 1.0
 }
 
+// Implement the Region interface
+func (box LatlongBox)ContainsPoint(pos Latlong) bool {
+	return box.Contains(pos)
+}
+func (box LatlongBox)IntersectsLine(l LatlongLine) bool {
+	return false // Implement me
+}
+func (b1 LatlongBox)IntersectsBox(b2 LatlongBox) bool {
+	outcome,_ := b1.OverlapsWith(b2)
+	return ! outcome.IsDisjoint()
+}
+func (b LatlongBox)ToLines() []LatlongLine {
+	SW,NE,SE,NW := b.SW, b.NE, b.SE(), b.NW()
+	return []LatlongLine{
+		SE.BuildLine(SW),
+		SW.BuildLine(NW),
+		NW.BuildLine(NE),
+		NE.BuildLine(SE),
+	}
+}
+func (c LatlongBox)ToCircles() []LatlongCircle { return []LatlongCircle{} }
+
+
 // {{{ -------------------------={ E N D }=----------------------------------
 
 // Local variables:
