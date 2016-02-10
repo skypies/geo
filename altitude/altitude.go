@@ -7,8 +7,8 @@ import "math"
 const (
 	// Some universal physical constants, using american units
 	Rstar = 8.9494596e4    // Universal gas constant    (lb.ft2/(lb.mol.s2))
-  Gzero = 32.17405       // Gravitational constant    (ft/s^2)
-  M     = 28.9644        // Molar mass of Earth's air (lb/lb.mol)
+	Gzero = 32.17405       // Gravitational constant    (ft/s^2)
+	M     = 28.9644        // Molar mass of Earth's air (lb/lb.mol)
 
 	// These are for the 'b=0' regime, which applies under 36,000 feet.
 	p0    = 29.9213           // Static pressure        (inHg)
@@ -17,8 +17,8 @@ const (
 
 
 	// Precompute these values
-  E              = (Gzero * M) / (Rstar * L0)  // This is 'E' in the derivation below
-  OneOverMinusE  = -1.0/E                      // The final exponent
+	E              = (Gzero * M) / (Rstar * L0)  // This is 'E' in the derivation below
+	OneOverMinusE  = -1.0/E                      // The final exponent
 	T0OverMinusL0  = -1.0 * (T0/L0)
 )
 
