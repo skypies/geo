@@ -12,9 +12,11 @@ const KLineSnapKM = 0.3  // How far a trackpoint can be from a line, and still b
 type LatlongLine struct {
 	From,To  Latlong
 	m,b      float64
+
+	I,J      int  // index values for the two points used to build this line
 }
 func (line LatlongLine)String() string {
-	return fmt.Sprintf("[y=%.2f.x + %.2f] (%.1f,%.1f)->(%.1f.%.1f)",
+	return fmt.Sprintf("[y=%.2f.x + %.2f] (%.3f,%.3f)->(%.3f,%.3f)",
 		line.m, line.b, line.From.x(), line.From.y(), line.To.x(), line.To.y())
 }
 
@@ -33,9 +35,9 @@ func calcB(m float64, p Latlong) float64 {
 
 // }}}
 
-// {{{ latlong.BuildLine
+// {{{ latlong.LineTo (BuildLine)
 
-func (from Latlong)BuildLine(to Latlong) LatlongLine {
+func (from Latlong)LineTo(to Latlong) LatlongLine {
 	m := calcM(from,to)
 	return LatlongLine{
 		From: from,
@@ -45,17 +47,25 @@ func (from Latlong)BuildLine(to Latlong) LatlongLine {
 	}
 }
 
+func (from Latlong)BuildLine(to Latlong) LatlongLine { return from.LineTo(to) }
+
 // }}}
 
-// {{{ line.y, line.x
+// {{{ l.x, l.y, l.Box
 
 // Apply equation of line: y=mx+b
 func (line LatlongLine)y(x float64) float64 { return line.m * x + line.b }
 func (line LatlongLine)x(y float64) float64 { return (y - line.b) / line.m }
-//func (line LatlongLine)scalar(pos Latlong) float64 {}
+
+func (l LatlongLine)Box() LatlongBox { return l.From.BoxTo(l.To) }
+
+func (l LatlongLine)IsVertical()   bool { return math.IsInf(l.m,0) }
+func (l LatlongLine)IsDegenerate() bool {
+	return l.From.Lat==l.To.Lat && l.From.Long==l.To.Long
+}
 
 // }}}
-// {{{ line.intersectByLineEqutions
+// {{{ l.intersectByLineEqutions
 
 // This function uses the m,b line constants.
 // If either line is vertical, we use l.From anchor point; there is no need for a l.To point.
@@ -89,7 +99,8 @@ func (l1 LatlongLine)intersectByLineEquations(l2 LatlongLine) (Latlong, bool) {
 
 // }}}
 
-// {{{ line.PerpendicularTo
+
+// {{{ l.PerpendicularTo
 
 func (orig LatlongLine)PerpendicularTo(pos Latlong) LatlongLine {
 	// The perpendicular has a gradient that is the negative inverse of the orig line
@@ -108,7 +119,7 @@ func (orig LatlongLine)PerpendicularTo(pos Latlong) LatlongLine {
 }
 
 // }}}
-// {{{ line.ClosestTo
+// {{{ l.ClosestTo
 
 // Presumes infinite line
 func (line LatlongLine)ClosestTo(pos Latlong) Latlong {
@@ -117,14 +128,14 @@ func (line LatlongLine)ClosestTo(pos Latlong) Latlong {
 }
 
 // }}}
-// {{{ line.ClosestDistance
+// {{{ l.ClosestDistance
 
 func (line LatlongLine)ClosestDistance(pos Latlong) float64 {
 	return pos.Dist(line.ClosestTo(pos))
 }
 
 // }}}
-// {{{ line.DistAlongLine
+// {{{ l.DistAlongLine
 
 // If one unit is the dist between .From and .To, and .From is zero; how far along the line is pos?
 func (line LatlongLine)DistAlongLine(pos Latlong) float64 {
@@ -145,6 +156,31 @@ func (line LatlongLine)DistAlongLine(pos Latlong) float64 {
 
 	// d1 represents 0.0; d2 represents 1.0. Where is pos ?
 	return (dPos - d1) / (d2 - d1)
+}
+
+// }}}
+// {{{ l.IntersectsUnbounded
+
+// Treats the lines as infinite. Returns whether there was an intersection.
+func (l1 LatlongLine)IntersectsUnbounded(l2 LatlongLine) (Latlong, bool) {
+	pos,parallel := l1.intersectByLineEquations(l2)
+	return pos, !parallel
+}
+
+// }}}
+// {{{ l.Intersects
+
+func (l1 LatlongLine)Intersects(l2 LatlongLine) (Latlong, bool) {
+	pos,parallel := l1.intersectByLineEquations(l2)
+
+	if parallel { return pos, false }
+	
+	// Does the point of intersection lie within [from,to] for both lines ?
+	// Simple bounding box tests will work !
+	if ! l1.Box().Contains(pos) { return pos, false }
+	if ! l2.Box().Contains(pos) { return pos, false }
+	
+	return pos, true
 }
 
 // }}}

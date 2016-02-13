@@ -69,6 +69,9 @@ type TPClassBAnalysis struct {
 	Reasoning           string  // Explanation of stuff
 
 	// Handy data to have around later
+	I                   int     // Index into the track for the point we've analyzed
+	InchesHg            float64 // The pressure correction applied
+	IndicatedAltitude   float64 // The pressure corrected altitude
 	Floor,Ceil          float64 // The Class B space the point was in (0 if not in space)
 	DistNM              float64 // Seeing as we've calculated it :)
 
@@ -80,13 +83,13 @@ func (a TPClassBAnalysis)IsViolation() bool {
 	return a.VerticalDisposition < 0
 }
 
-func (m ClassBMap)ClassBPointAnalysis(pos Latlong, speed float64, altitude float64, o *TPClassBAnalysis) {
+func (m ClassBMap)ClassBPointAnalysis(pos Latlong, speed float64, alt,tol float64, o *TPClassBAnalysis) {
 	distNM := pos.DistNM(m.Center)
 	bearing := pos.BearingTowards(m.Center)
 	o.DistNM = distNM
 
 	o.Reasoning = fmt.Sprintf("** ClassB analysis: aircraft at %s, %.0f kt, %.0f feet\n",
-		pos,speed,altitude)
+		pos,speed,alt)
 	o.Reasoning += fmt.Sprintf("* Distance to %s in NM: %.1f; bearing towards %s: %.1f\n",
 		m.Name, distNM, m.Name, bearing)
 
@@ -98,20 +101,20 @@ func (m ClassBMap)ClassBPointAnalysis(pos Latlong, speed float64, altitude float
 	}
 
 	limitStr := fmt.Sprintf("%d/%d", int(o.Ceil/100.0), int(o.Floor/100.0))
-	o.Reasoning += fmt.Sprintf("* In <b>%s</b> space, at <b>%.0f</b> feet\n", limitStr, altitude)
+	o.Reasoning += fmt.Sprintf("* In <b>%s</b> space, at <b>%.0f</b> feet\n", limitStr, alt)
 	
-	if (altitude > o.Ceil) {
+	if (alt > o.Ceil) {
 		o.VerticalDisposition = 1
 		o.Reasoning += "* above class B ceiling\n"
 		
-	} else if (altitude > o.Floor-201) {  // Allow 200' of wriggle room
+	} else if (alt > o.Floor-tol-1) {  // Allow <tol> feet of wriggle room
 		o.VerticalDisposition = 0
-		o.Reasoning += "* within class B height range\n"
+		o.Reasoning += "* within (tolerance of) class B height range\n"
 		
 	} else {
 		o.VerticalDisposition = -1
 		o.Reasoning += "* below class B floor\n"
-		o.BelowBy = o.Floor - altitude
+		o.BelowBy = o.Floor - alt
 	}
 
 	return

@@ -18,6 +18,12 @@ func (box LatlongBox)String() string { return fmt.Sprintf("%s-%s", box.SW, box.N
 func (box LatlongBox)SE() Latlong { return Latlong{Lat:box.SW.Lat , Long:box.NE.Long} }
 func (box LatlongBox)NW() Latlong { return Latlong{Lat:box.NE.Lat , Long:box.SW.Long} }
 
+// Derive bounded lines for the sides
+func (box LatlongBox)BottomSide() LatlongLine { return box.SW.LineTo(box.SE()) }
+func (box LatlongBox)LeftSide()   LatlongLine { return box.SW.LineTo(box.NW()) }
+func (box LatlongBox)TopSide()    LatlongLine { return box.NW().LineTo(box.NE) }
+func (box LatlongBox)RightSide()  LatlongLine { return box.SE().LineTo(box.NE) }
+
 func (box LatlongBox)LongWidth() float64 { return box.NE.Long - box.SW.Long }
 func (box LatlongBox)LatHeight() float64 { return box.NE.Lat - box.SW.Lat }
 
@@ -88,24 +94,40 @@ func (b1 LatlongBox)OverlapsWith(b2 LatlongBox) (OverlapOutcome,float64) {
 }
 
 // Implement the Region interface
+func (box LatlongBox)LookForExit() bool { return true }
+func (box LatlongBox)IntersectsLine(l LatlongLine) bool {
+	// Trivial bounding box test; discard if the line (as a box) has no overlap
+	if !box.IntersectsBox(l.Box()) { return false }
+
+	// If the box contains either point, we're good.
+	if box.Contains(l.From) || box.Contains(l.To) { return true }
+
+	// Else: we know the boxes overlap, but both line points are outside of it; so ensure
+	// that the line has a (bounded) intersection with the box.
+	if _,isect := box.BottomSide().Intersects(l); isect { return true }
+	if _,isect := box.LeftSide().Intersects(l); isect { return true }
+	if _,isect := box.RightSide().Intersects(l); isect { return true }
+	if _,isect := box.TopSide().Intersects(l); isect { return true }
+	
+	return false
+}
+
+func (box LatlongBox)IntersectsLineDeb(l LatlongLine) (bool, string) {
+	return box.IntersectsLine(l),""
+}
+
+// Implement Region interface (defunct ?)
 func (box LatlongBox)ContainsPoint(pos Latlong) bool {
 	return box.Contains(pos)
-}
-func (box LatlongBox)IntersectsLine(l LatlongLine) bool {
-	return false // Implement me
 }
 func (b1 LatlongBox)IntersectsBox(b2 LatlongBox) bool {
 	outcome,_ := b1.OverlapsWith(b2)
 	return ! outcome.IsDisjoint()
 }
+
+// Implement MapRenderer interface
 func (b LatlongBox)ToLines() []LatlongLine {
-	SW,NE,SE,NW := b.SW, b.NE, b.SE(), b.NW()
-	return []LatlongLine{
-		SE.BuildLine(SW),
-		SW.BuildLine(NW),
-		NW.BuildLine(NE),
-		NE.BuildLine(SE),
-	}
+	return []LatlongLine{ b.BottomSide(), b.LeftSide(), b.RightSide(), b.TopSide() }
 }
 func (c LatlongBox)ToCircles() []LatlongCircle { return []LatlongCircle{} }
 

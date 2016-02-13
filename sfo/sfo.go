@@ -45,7 +45,10 @@ var (
 		"ANJEE": geo.Latlong{36.7462861, -121.9648917},
 		"SKUNK": geo.Latlong{37.0075944, -122.0332278},
 		"BOLDR": geo.Latlong{37.1708861, -122.0761667},
-		}
+
+		// Others of interest
+		"PPEGS": geo.Latlong{37.3920722, -122.2817222},
+	}
 
 	SFOClassBMap = geo.ClassBMap{
 		Name: "SFO",

@@ -14,10 +14,20 @@ func (ll Latlong)String() string { return fmt.Sprintf("(%.4f,%.4f)", ll.Lat, ll.
 func (ll Latlong)x() float64 { return ll.Long }
 func (ll Latlong)y() float64 { return ll.Lat }
 
+// The square of the distance; useful for deciding closest approach
+func (from Latlong)LatlongDistSq(to Latlong) float64 {
+	x,y := (to.Long - from.Long), (to.Lat - from.Lat)
+	return x*x + y*y
+}
+
 // ApproxDist treats the latlongs as y,x coords, and returns the 'latlong dist'
 func (from Latlong)LatlongDist(to Latlong) float64 {
-	x,y := (to.Long - from.Long), (to.Lat - from.Lat)
-	return math.Sqrt(x*x + y*y)
+	return math.Sqrt(from.LatlongDistSq(to))
+}
+
+// Maybe it's safe to compare a nil-float64 directly to 0.0, and this is just a paranoid bodge.
+func (ll Latlong)IsNil() bool {
+	return math.Abs(ll.Lat)<0.01 && math.Abs(ll.Long)<0.01
 }
 
 // This probably isn't what you want
