@@ -16,8 +16,8 @@ type LatlongLine struct {
 	I,J      int  // index values for the two points used to build this line
 }
 func (line LatlongLine)String() string {
-	return fmt.Sprintf("[y=%.2f.x + %.2f] (%.3f,%.3f)->(%.3f,%.3f)",
-		line.m, line.b, line.From.x(), line.From.y(), line.To.x(), line.To.y())
+	return fmt.Sprintf("[y=%.2f.x + %.2f] (%.3f,%.3f)->(%.3f,%.3f) [i=%d,j=%d]",
+		line.m, line.b, line.From.x(), line.From.y(), line.To.x(), line.To.y(), line.I, line.J)
 }
 
 // {{{ calcM, calcB

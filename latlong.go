@@ -6,7 +6,8 @@ import(
 )
 
 type Latlong struct {
-	Lat, Long float64
+	Lat  float64 `json:"lat"` // JSON format to match the Google Maps object definition
+	Long float64 `json:"lng"`
 }
 func (ll Latlong)String() string { return fmt.Sprintf("(%.4f,%.4f)", ll.Lat, ll.Long) }
 

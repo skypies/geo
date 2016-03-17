@@ -12,7 +12,9 @@ var (
 	KLatlongSJC = geo.Latlong{37.3639472, -121.9289375}	
 	KLatlongSERFR1 = geo.Latlong{37.221516, -121.992987} // This is the centerpoint for maps viewport
 
-	KBoxSFO120K = KLatlongSFO.Box(80,80)  // This is the box in which we look for new flights
+	KBoxSFO120K = KLatlongSFO.Box(80,80)
+
+	KBoxSnarfingCatchment = KLatlongSFO.Box(125,125)  // The box in which we look for new flights
 
 	// Boxes used in a few reports
 	KBoxSFO10K = KLatlongSFO.Box(12,12)
@@ -46,8 +48,30 @@ var (
 		"SKUNK": geo.Latlong{37.0075944, -122.0332278},
 		"BOLDR": geo.Latlong{37.1708861, -122.0761667},
 
-		// Others of interest
+		// Things for SFO arrivals
+		"HEMAN": geo.Latlong{37.5338500, -122.1733333},
+		"DUYET": geo.Latlong{37.5674000, -122.2529278},
+		"NEPIC": geo.Latlong{37.5858944, -122.2968833},
+		
+		// Things for Oceanic
 		"PPEGS": geo.Latlong{37.3920722, -122.2817222},
+		"ALLBE": geo.Latlong{37.5063889, -127.0000000},
+		"ALCOA": geo.Latlong{37.8332528, -125.8345250},
+		"CINNY": geo.Latlong{36.1816667, -124.7600000},
+		"PAINT": geo.Latlong{38.0000000, -125.5000000},
+		"OSI"  : geo.Latlong{37.3925000, -122.2813000},
+		"PIRAT": geo.Latlong{37.2576500, -122.8633528},
+
+		"PONKE": geo.Latlong{37.4588167, -121.9960528},
+		"WETOR": geo.Latlong{37.4847194, -122.0571417},
+
+		// Things for SILCN3
+		"X_RSH": geo.Latlong{36.868582,  -121.691934},
+		"VLLEY": geo.Latlong{36.5091667, -121.4402778},
+		"GUUYY": geo.Latlong{36.7394444, -121.5411111},
+		"SSEBB": geo.Latlong{36.9788889, -121.6425000},
+		"GSTEE": geo.Latlong{37.0708333, -121.6716667},
+		"KLIDE": geo.Latlong{37.1641667, -121.7130556},
 	}
 
 	SFOClassBMap = geo.ClassBMap{
