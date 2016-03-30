@@ -42,7 +42,7 @@ func (from Latlong)DistKM(to Latlong) float64 {
 	return haversine(from.Long,from.Lat,  to.Long,to.Lat)
 }
 func (from Latlong)DistNM(to Latlong) float64 {
-	return from.DistKM(to) * kNauticalMilePerKM
+	return from.DistKM(to) * KNauticalMilePerKM
 }
 
 func (from Latlong)BearingTowards(to Latlong) float64 {

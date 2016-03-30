@@ -8,8 +8,9 @@ const (
 	kmtomiles = float64(0.621371192)
 	earthRadiusKM = float64(6371)
 	kKMPerNauticalMile = float64(1.852)
-	kNauticalMilePerKM = float64(0.539957)
-)	
+
+	KNauticalMilePerKM = float64(0.539957)
+)
 
 // The haversine formula will calculate the spherical distance as the crow flies 
 // between lat and lon for two given points, in km

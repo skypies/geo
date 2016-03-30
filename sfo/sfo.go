@@ -66,12 +66,17 @@ var (
 		"WETOR": geo.Latlong{37.4847194, -122.0571417},
 
 		// Things for SILCN3
-		"X_RSH": geo.Latlong{36.868582,  -121.691934},
 		"VLLEY": geo.Latlong{36.5091667, -121.4402778},
 		"GUUYY": geo.Latlong{36.7394444, -121.5411111},
 		"SSEBB": geo.Latlong{36.9788889, -121.6425000},
 		"GSTEE": geo.Latlong{37.0708333, -121.6716667},
 		"KLIDE": geo.Latlong{37.1641667, -121.7130556},
+		"BAXBE": geo.Latlong{36.7730556, -121.6263889},
+		"APLLE": geo.Latlong{37.0338889, -121.8050000},
+
+		// Personal entries
+		"X_RSH": geo.Latlong{36.868582,  -121.691934},
+		"X_BLH": geo.Latlong{37.2199471, -122.0425108},
 	}
 
 	SFOClassBMap = geo.ClassBMap{
