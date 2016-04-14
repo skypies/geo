@@ -77,6 +77,7 @@ var (
 		// Personal entries
 		"X_RSH": geo.Latlong{36.868582,  -121.691934},
 		"X_BLH": geo.Latlong{37.2199471, -122.0425108},
+		"X_HBR": geo.Latlong{37.309564,  -122.112378},
 	}
 
 	SFOClassBMap = geo.ClassBMap{
