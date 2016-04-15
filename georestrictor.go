@@ -11,6 +11,7 @@ type MapRenderer interface {
 type GeoRestrictor interface {
 	String() string	
 
+	IntersectsAltitude(int64) bool
 	IntersectsLine (LatlongLine) bool
 	IntersectsLineDeb (LatlongLine) (bool,string)
 	LookForExit() bool  // Should we enter, and then exit, this restrition ? Or is it a window ?

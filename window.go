@@ -21,6 +21,12 @@ func (w Window)IntersectsLine(l LatlongLine) bool {
 	_,intersects := w.LatlongLine.Intersects(l)
 	return intersects
 }
+func (w Window)IntersectsAltitude(alt int64) bool {
+	if w.MinAltitude > 0 && float64(alt) < w.MinAltitude { return false }
+	if w.MaxAltitude > 0 && float64(alt) > w.MaxAltitude { return false }
+	return true
+}
+
 func (w Window)IntersectsLineDeb(l LatlongLine) (bool,string) { return w.IntersectsLine(l),"" }
 
 // Implement MapRenderer interface

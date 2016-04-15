@@ -21,6 +21,11 @@ func (c LatlongCircle)IntersectsLine(l LatlongLine) bool {
 	// http://math.stackexchange.com/questions/228841/how-do-i-calculate-the-intersections-of-a-straight-line-and-a-circle
 	return false // Implement me
 }
+func (c LatlongCircle)IntersectsAltitude(alt int64) bool {
+	return false // Implement me, too
+}
+
+
 func (c LatlongCircle)IntersectsLineDeb(l LatlongLine) (bool,string) {return c.IntersectsLine(l),""}
 
 // Implement Region interface (defunct ?)

@@ -10,9 +10,16 @@ const (
 )
 
 type LatlongBox struct {
-	SW, NE Latlong
+	SW, NE       Latlong
+	Floor, Ceil  int64  // altitude, feet; zero means "don't care". Nonzero means >= or <=, depending
 }
-func (box LatlongBox)String() string { return fmt.Sprintf("%s-%s", box.SW, box.NE) }
+func (box LatlongBox)String() string {
+	str := fmt.Sprintf("%s-%s", box.SW, box.NE)
+	if box.Floor > 0 || box.Ceil > 0 {
+		str += fmt.Sprintf("[%d,%d]", box.Floor, box.Ceil)
+	}
+	return str
+}
 
 // Derive the other two corners on demand
 func (box LatlongBox)SE() Latlong { return Latlong{Lat:box.SW.Lat , Long:box.NE.Long} }
@@ -93,7 +100,7 @@ func (b1 LatlongBox)OverlapsWith(b2 LatlongBox) (OverlapOutcome,float64) {
 	return OverlapR2StraddlesStart, 1.0
 }
 
-// Implement the Region interface
+// Implement the Restrictor interface
 func (box LatlongBox)LookForExit() bool { return true }
 func (box LatlongBox)IntersectsLine(l LatlongLine) bool {
 	// Trivial bounding box test; discard if the line (as a box) has no overlap
@@ -110,6 +117,12 @@ func (box LatlongBox)IntersectsLine(l LatlongLine) bool {
 	if _,isect := box.TopSide().Intersects(l); isect { return true }
 	
 	return false
+}
+
+func (box LatlongBox)IntersectsAltitude(alt int64) bool {
+	if box.Floor > 0 && alt < box.Floor { return false }
+	if box.Ceil > 0  && alt > box.Ceil  { return false }
+	return true
 }
 
 func (box LatlongBox)IntersectsLineDeb(l LatlongLine) (bool, string) {
