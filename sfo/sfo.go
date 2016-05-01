@@ -74,6 +74,10 @@ var (
 		"BAXBE": geo.Latlong{36.7730556, -121.6263889},
 		"APLLE": geo.Latlong{37.0338889, -121.8050000},
 
+		// Randoms
+		"PARIY": geo.Latlong{37.3560056, -121.9231222},  // SJC ?
+		"ZORSA": geo.Latlong{37.3627583, -122.0500306},
+		
 		// Personal entries
 		"X_RSH": geo.Latlong{36.868582,  -121.691934},
 		"X_BLH": geo.Latlong{37.2199471, -122.0425108},
