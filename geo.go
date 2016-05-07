@@ -9,6 +9,7 @@ const (
 	earthRadiusKM = float64(6371)
 	kKMPerNauticalMile = float64(1.852)
 
+	KFeetPerKM = float64(3280.8399)
 	KNauticalMilePerKM = float64(0.539957)
 )
 
