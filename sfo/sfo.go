@@ -8,18 +8,23 @@ import(
 // A bunch of constants relating to SFO
 
 var (
+	// Retire these three.
 	KLatlongSFO = geo.Latlong{37.6188172, -122.3754281}
 	KLatlongSJC = geo.Latlong{37.3639472, -121.9289375}	
 	KLatlongSERFR1 = geo.Latlong{37.221516, -121.992987} // This is the centerpoint for maps viewport
-
-	KBoxSFO120K = KLatlongSFO.Box(80,80)
 
 	KBoxSnarfingCatchment = KLatlongSFO.Box(125,125)  // The box in which we look for new flights
 
 	// Boxes used in a few reports
 	KBoxSFO10K = KLatlongSFO.Box(12,12)
 	KBoxPaloAlto20K = geo.Latlong{37.433536,-122.1310187}.Box(6,7)
-	
+
+	KAirports = map[string]geo.Latlong{
+		"KSFO": geo.Latlong{37.6188172, -122.3754281},
+		"KSJC": geo.Latlong{37.3639472, -121.9289375},
+		"KOAK": geo.Latlong{37.7212597, -122.2211489},
+	}
+
 	// http://www.myaviationinfo.com/FixState.php?FixState=CALIFORNIA
 	KFixes = map[string]geo.Latlong{
 		// SERFR2 & WWAVS1
