@@ -57,7 +57,11 @@ var (
 		"HEMAN": geo.Latlong{37.5338500, -122.1733333},
 		"DUYET": geo.Latlong{37.5674000, -122.2529278},
 		"NEPIC": geo.Latlong{37.5858944, -122.2968833},
-		
+
+		// Things for SFO departures		
+		"PORTE": geo.Latlong{37.4897861, -122.4745778},
+		"SSTIK": geo.Latlong{37.6783444, -122.3616583},
+
 		// Things for Oceanic
 		"PPEGS": geo.Latlong{37.3920722, -122.2817222},
 		"ALLBE": geo.Latlong{37.5063889, -127.0000000},
@@ -70,7 +74,7 @@ var (
 		"PONKE": geo.Latlong{37.4588167, -121.9960528},
 		"WETOR": geo.Latlong{37.4847194, -122.0571417},
 
-		// Things for SILCN3
+		// Things for SJC/SILCN3
 		"VLLEY": geo.Latlong{36.5091667, -121.4402778},
 		"GUUYY": geo.Latlong{36.7394444, -121.5411111},
 		"SSEBB": geo.Latlong{36.9788889, -121.6425000},
