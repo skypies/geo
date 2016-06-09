@@ -70,7 +70,10 @@ var (
 		"PAINT": geo.Latlong{38.0000000, -125.5000000},
 		"OSI"  : geo.Latlong{37.3925000, -122.2813000},
 		"PIRAT": geo.Latlong{37.2576500, -122.8633528},
-
+		"PYE"  : geo.Latlong{38.0797567, -122.8678275},
+		"STINS": geo.Latlong{37.8236111, -122.7566667},
+		"HADLY": geo.Latlong{37.4022222, -122.5755556},
+		
 		"PONKE": geo.Latlong{37.4588167, -121.9960528},
 		"WETOR": geo.Latlong{37.4847194, -122.0571417},
 
@@ -87,6 +90,37 @@ var (
 		"PARIY": geo.Latlong{37.3560056, -121.9231222},  // SJC ?
 		"ZORSA": geo.Latlong{37.3627583, -122.0500306},
 		
+		// Things for East Bay
+		"HOPTA": geo.Latlong{37.78501944, -122.154},
+		"BOYSS": geo.Latlong{38.02001944, -122.3778639},
+		"WNDSR": geo.Latlong{38.681808, -122.478747},
+		"WEBRR": geo.Latlong{38.243881, -122.412142},
+		"SPAMY": geo.Latlong{39.200661, -122.591042},
+		"HUBRT": geo.Latlong{39.040228, -122.568314},
+		"DRAXE": geo.Latlong{38.759, -122.389047},
+		"BMBOO": geo.Latlong{38.892972, -122.233019},
+		"RBUCL": geo.Latlong{39.070053, -122.02615},
+		"GRTFL": geo.Latlong{38.35216944, -122.2314694},
+		"TRUKN": geo.Latlong{37.71755833, -122.2145889},
+		"DEDHD": geo.Latlong{38.33551666, -122.1128083},
+		"HYPEE": geo.Latlong{37.88024444, -122.0674833},
+		"COSMC": geo.Latlong{37.82606111, -122.0049},
+		"TYDYE": geo.Latlong{37.689319, -122.268944},
+		"ORRCA": geo.Latlong{38.610325, -121.551622},
+		"MOGEE": geo.Latlong{38.336111, -121.389722},
+		"TIPRE": geo.Latlong{38.205833, -121.035833},
+		"SYRAH": geo.Latlong{37.99105, -121.103089},
+		"RAIDR": geo.Latlong{38.0325, -122.5575},
+		"CRESN": geo.Latlong{37.697475, -122.012019},
+		"AAAME": geo.Latlong{37.770908, -122.082811},
+		"ALLXX": geo.Latlong{37.729606, -122.064283},
+		"HIRMO": geo.Latlong{37.92765, -122.14835},
+		"CEXUR": geo.Latlong{37.934161, -122.252928},
+		"WOULD": geo.Latlong{37.774508, -122.058064},
+		"FINSH": geo.Latlong{37.651203, -122.257161},
+		"HUSHH": geo.Latlong{37.7495, -122.338592},
+		"AANET": geo.Latlong{38.530769, -122.497194},
+
 		// Personal entries
 		"X_RSH": geo.Latlong{36.868582,  -121.691934},
 		"X_BLH": geo.Latlong{37.2199471, -122.0425108},
