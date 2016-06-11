@@ -53,6 +53,17 @@ var (
 		"SKUNK": geo.Latlong{37.0075944, -122.0332278},
 		"BOLDR": geo.Latlong{37.1708861, -122.0761667},
 
+		// BDEGA2
+		"LOZIT": geo.Latlong{37.899325, -122.673194},
+		"BGGLO": geo.Latlong{38.224589, -122.767506},
+		"GEEHH": geo.Latlong{38.453333, -122.428650},
+		"MSCAT": geo.Latlong{38.566697, -122.671667},
+		"JONNE": geo.Latlong{38.551042, -122.863275},
+		"AMAKR": geo.Latlong{39.000000, -123.750000},
+		"DEEAN": geo.Latlong{38.349164, -123.302289},
+		"MRRLO": geo.Latlong{38.897547, -122.578233},
+		"MLBEC": geo.Latlong{38.874772, -122.958989},
+
 		// Things for SFO arrivals
 		"HEMAN": geo.Latlong{37.5338500, -122.1733333},
 		"DUYET": geo.Latlong{37.5674000, -122.2529278},
