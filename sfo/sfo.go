@@ -66,7 +66,6 @@ var (
 
 		// Things for SFO arrivals
 		"HEMAN": geo.Latlong{37.5338500, -122.1733333},
-		"DUYET": geo.Latlong{37.5674000, -122.2529278},
 		"NEPIC": geo.Latlong{37.5858944, -122.2968833},
 
 		// Things for SFO departures		
@@ -131,6 +130,14 @@ var (
 		"FINSH": geo.Latlong{37.651203, -122.257161},
 		"HUSHH": geo.Latlong{37.7495, -122.338592},
 		"AANET": geo.Latlong{38.530769, -122.497194},
+
+		// Foster city
+		"ROKME": geo.Latlong{37.5177778, -122.1191667},
+		"DONGG": geo.Latlong{37.5891667, -122.2525000},
+		"GUTTS": geo.Latlong{37.5552778, -122.1597222},
+		"GOBEC": geo.Latlong{37.5869444, -122.2547222},
+		"WASOP": geo.Latlong{37.5391667, -122.1247222},
+		"DUYET": geo.Latlong{37.5680556, -122.2547222},
 
 		// Personal entries
 		"X_RSH": geo.Latlong{36.868582,  -121.691934},
