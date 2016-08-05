@@ -135,10 +135,44 @@ var (
 		"ROKME": geo.Latlong{37.5177778, -122.1191667},
 		"DONGG": geo.Latlong{37.5891667, -122.2525000},
 		"GUTTS": geo.Latlong{37.5552778, -122.1597222},
-		"GOBEC": geo.Latlong{37.5869444, -122.2547222},
+		// This GOBEC is wrong ... see the one below.
+		// "GOBEC": geo.Latlong{37.5869444, -122.2547222},
 		"WASOP": geo.Latlong{37.5391667, -122.1247222},
 		"DUYET": geo.Latlong{37.5680556, -122.2547222},
 
+		// DYAMD and YOSEM
+		"ARCHI": geo.Latlong{37.490833,    -121.875500},
+		"FRELY": geo.Latlong{37.510667,    -121.793167},
+		"CEDES": geo.Latlong{37.550822,    -121.624586},
+		"FLOWZ": geo.Latlong{37.592500,    -121.264833},
+		"ALWYS": geo.Latlong{37.633500,    -120.959333},
+		"LAANE": geo.Latlong{37.659000,    -120.747333},
+		"DYAMD": geo.Latlong{37.699167,    -120.404500},
+
+		"FAITH": geo.Latlong{37.401217,    -121.861900},
+		"SOOIE": geo.Latlong{37.428500,    -121.607667},
+		"FRIGG": geo.Latlong{37.465500,    -121.257333},
+		"ZOMER": geo.Latlong{37.545333,    -120.631500},
+		"SNORA": geo.Latlong{37.645500,    -119.806333},
+		"YOSEM": geo.Latlong{37.762667,    -118.766667},
+
+		// Final approaches into SFO (28L, 28R)
+		"GOBEC": geo.Latlong{37.578833,    -122.252833},
+		"JOSUF": geo.Latlong{37.592167,    -122.285500},
+		"DARNE": geo.Latlong{37.593333,    -122.292333},
+		"FABLA": geo.Latlong{37.597500,    -122.318833},
+		"AXMUL": geo.Latlong{37.571500,    -122.257167},
+		"WIBNI": geo.Latlong{37.516667,    -122.031333},
+		"ANETE": geo.Latlong{37.463667,    -121.942667},
+		"FATUS": geo.Latlong{37.486000,    -122.002333},
+		"HEGOT": geo.Latlong{37.508000,    -122.061833},
+		"MIUKE": geo.Latlong{37.552333,    -122.181167},
+		"DIVEC": geo.Latlong{37.432833,    -121.935000},
+		"CEPIN": geo.Latlong{37.536000,    -122.172833},
+		"DUMBA": geo.Latlong{37.503500,    -122.096167},
+		"GIRRR": geo.Latlong{37.495852,    -122.027167},
+		"ZILED": geo.Latlong{37.495667,    -121.958167},
+		
 		// Personal entries
 		"X_RSH": geo.Latlong{36.868582,  -121.691934},
 		"X_BLH": geo.Latlong{37.2199471, -122.0425108},
