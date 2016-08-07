@@ -177,6 +177,8 @@ var (
 		"X_RSH": geo.Latlong{36.868582,  -121.691934},
 		"X_BLH": geo.Latlong{37.2199471, -122.0425108},
 		"X_HBR": geo.Latlong{37.309564,  -122.112378},
+		"X_WSD": geo.Latlong{37.420995,  -122.268237},
+		"X_PVY": geo.Latlong{37.381143,  -122.210330},
 	}
 
 	SFOClassBMap = geo.ClassBMap{
