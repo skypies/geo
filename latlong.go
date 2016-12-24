@@ -11,6 +11,8 @@ type Latlong struct {
 }
 func (ll Latlong)String() string { return fmt.Sprintf("(%.4f,%.4f)", ll.Lat, ll.Long) }
 
+type LatlongSlice []Latlong
+
 // We often treat latlong as a simple (x,y) space. We take Long as x, to make horiz/vert look normal
 func (ll Latlong)x() float64 { return ll.Long }
 func (ll Latlong)y() float64 { return ll.Lat }
