@@ -1,6 +1,9 @@
 package geo
 
+// Maybe move to https://github.com/paulmach/go.geo ?
+
 // Formulas from http://www.movable-type.co.uk/scripts/latlong.html
+// Quadtree walking: https://www.cs.umd.edu/class/spring2008/cmsc420/L17-18.QuadTrees.pdf
 
 import "math"
 

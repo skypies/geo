@@ -45,3 +45,35 @@ func TestLineIntersects(t *testing.T) {
 		}
 	}
 }
+
+func TestWhichSide(t *testing.T) {
+	tests := []struct{
+		A,B,C  Latlong
+		Out    int
+	}{
+		// Line.From, Line.To, Point, outcome
+		{Latlong{5,0}, Latlong{5,10}, Latlong{ 0,5}, -1},
+		{Latlong{5,0}, Latlong{5,10}, Latlong{10,5}, +1},
+		{Latlong{5,0}, Latlong{5,10}, Latlong{ 5,5},  0},
+		{Latlong{5,10}, Latlong{5,0}, Latlong{ 0,5}, +1},
+		{Latlong{5,10}, Latlong{5,0}, Latlong{10,5}, -1},
+		{Latlong{5,10}, Latlong{5,0}, Latlong{ 5,5},  0},
+
+		{Latlong{0,0}, Latlong{10,-10}, Latlong{ 0,  0},  0},
+		{Latlong{0,0}, Latlong{10,-10}, Latlong{ 5, -5},  0},
+		{Latlong{0,0}, Latlong{10,-10}, Latlong{10,-10},  0},
+		{Latlong{0,0}, Latlong{10,-10}, Latlong{ 5,  0}, -1},
+		{Latlong{0,0}, Latlong{10,-10}, Latlong{ 5,-10}, +1},
+
+		{Latlong{0,0}, Latlong{10,-10}, Latlong{-1, 20}, -1},
+	}
+
+	for i,test := range tests {
+		line := test.A.LineTo(test.B)
+		outcome := line.WhichSide(test.C)
+
+		if test.Out != outcome {
+			t.Errorf("[t%d] wanted %d, got %d", i, test.Out, outcome)
+		}
+	}
+}

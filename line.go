@@ -99,7 +99,6 @@ func (l1 LatlongLine)intersectByLineEquations(l2 LatlongLine) (Latlong, bool) {
 
 // }}}
 
-
 // {{{ l.PerpendicularTo
 
 func (orig LatlongLine)PerpendicularTo(pos Latlong) LatlongLine {
@@ -181,6 +180,22 @@ func (l1 LatlongLine)Intersects(l2 LatlongLine) (Latlong, bool) {
 	if ! l2.Box().Contains(pos) { return pos, false }
 	
 	return pos, true
+}
+
+// }}}
+// {{{ l.WhichSide
+
+// -ve == left, +ve == right, 0 == lies-on-line
+func (l LatlongLine)WhichSide(p Latlong) int {
+	x,y := p.x(),p.y()
+	x1,y1 := l.From.x(),l.From.y()
+	x2,y2 := l.To.x(),l.To.y()
+
+	d := (x - x1)*(y2 - y1) - (y - y1)*(x2 - x1)
+
+	if d < 0.0 { return +1 }
+	if d > 0.0 { return -1 }
+	return 0 // Lies on the line
 }
 
 // }}}
