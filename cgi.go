@@ -4,6 +4,7 @@ import(
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 )
 
 // cloned from util/widget
@@ -28,6 +29,17 @@ func FormValueLatlong(r *http.Request, stem string) Latlong {
 	return Latlong{lat,long}
 }
 
+func FormValueNamedLatlong(r *http.Request, names map[string]Latlong, stem string) NamedLatlong {
+	if name := strings.ToUpper(r.FormValue(stem+"_name")); name != "" {
+		if _,exists := names[name]; !exists {
+			return NamedLatlong{Name:"[UNKNOWN]"} //, fmt.Errorf("Waypoint '%s' not known", wp)
+		}
+		return NamedLatlong{name, names[name]}
+	}
+
+	return NamedLatlong{"", FormValueLatlong(r,stem)}
+}
+
 func (pos Latlong)ToCGIArgs(stem string) string {
 	return fmt.Sprintf("%s_lat=%.5f&%s_long=%.5f", stem, pos.Lat, stem, pos.Long)
 }
@@ -47,4 +59,9 @@ func (box LatlongBox)ToCGIArgs(stem string) string {
 	if box.Floor > 0 { str += fmt.Sprintf("%s_floor=%d", stem, box.Floor) }
 	if box.Ceil > 0 { str += fmt.Sprintf("%s_ceil=%d", stem, box.Ceil) }
 	return str
+}
+
+
+func (nl NamedLatlong)ToCGIArgs(stem string) string {
+	return fmt.Sprintf("%s_name=%s&%s", stem, nl.Name, nl.Latlong.ToCGIArgs(stem))
 }

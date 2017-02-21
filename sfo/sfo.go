@@ -1,6 +1,7 @@
 package sfo
 
 import(
+	"net/http"
 	"sort"
 	"github.com/skypies/geo"
 )
@@ -24,7 +25,7 @@ var (
 		"KSJC": geo.Latlong{37.3639472, -121.9289375},
 		"KOAK": geo.Latlong{37.7212597, -122.2211489},
 	}
-
+							 
 	// http://www.myaviationinfo.com/FixState.php?FixState=CALIFORNIA
 	KFixes = map[string]geo.Latlong{
 		// SERFR2 & WWAVS1
@@ -172,6 +173,11 @@ var (
 		"DUMBA": geo.Latlong{37.503500,    -122.096167},
 		"GIRRR": geo.Latlong{37.495852,    -122.027167},
 		"ZILED": geo.Latlong{37.495667,    -121.958167},
+
+		// SJC arrivals (incl. reverse flow)
+		"HITIR": geo.Latlong{37.323567, -122.007392},
+		"JESEN": geo.Latlong{37.294831, -121.975569},
+		"PUCKK": geo.Latlong{37.363500, -122.009667},
 		
 		// Personal entries
 		"X_RSH": geo.Latlong{36.868582,  -121.691934},
@@ -225,6 +231,14 @@ func ListWaypoints() []string {
 	sort.Strings(ret)
 	return ret
 }
+
+// A version of this which looks up against SFO names
+func FormValueNamedLatlong(r *http.Request, stem string) geo.NamedLatlong {
+	vals := KFixes
+	for k,v := range KAirports { vals[k] = v }
+	return geo.FormValueNamedLatlong(r, vals, stem)
+}
+
 
 // {{{ -------------------------={ E N D }=----------------------------------
 
