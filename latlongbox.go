@@ -86,22 +86,26 @@ func (box *LatlongBox)Enclose(pos Latlong) {
 func (box LatlongBox)LatRange() Float64Range { return Float64Range{box.SW.Lat, box.NE.Lat} }
 func (box LatlongBox)LongRange() Float64Range { return Float64Range{box.SW.Long, box.NE.Long} }
 
-// We take some liberties with the outcome value; don't rely on it except for .IsDisjoint()
-// float is the fraction of b1 that overlaps with b2
+// Returned float *should* be the fraction of b1 that overlaps with b2
 func (b1 LatlongBox)OverlapsWith(b2 LatlongBox) (OverlapOutcome,float64) {
 	latDisp := RangeOverlap(b1.LatRange(), b2.LatRange())
 	longDisp := RangeOverlap(b1.LongRange(), b2.LongRange())
 	
 	if latDisp.IsDisjoint() || longDisp.IsDisjoint() {
-		return DisjointR2ComesAfter, 0.0
+		return Disjoint, 0.0
+	} else if latDisp == longDisp {
+		switch latDisp {
+		case OverlapR2IsContained: return OverlapR2IsContained, 1.0
+		case OverlapR2Contains:    return OverlapR2Contains, 1.0
+		}
 	}
 
-	// Really, we should figure out the actual amount of overlap; but for now, hardwire 1.0
-	return OverlapR2StraddlesStart, 1.0
+	return OverlapStraddles, 1.0
 }
 
 // Implement the Restrictor interface
 func (box LatlongBox)LookForExit() bool { return true }
+/*
 func (box LatlongBox)IntersectsLine(l LatlongLine) bool {
 	// Trivial bounding box test; discard if the line (as a box) has no overlap
 	if !box.IntersectsBox(l.Box()) { return false }
@@ -118,6 +122,34 @@ func (box LatlongBox)IntersectsLine(l LatlongLine) bool {
 	
 	return false
 }
+*/
+func (box LatlongBox)IntersectsLine(l LatlongLine) bool {
+	return ! box.OverlapsLine(l).IsDisjoint()
+}
+
+func (box LatlongBox)OverlapsLine(l LatlongLine) OverlapOutcome {
+	// Trivial bounding box test; discard if the line (as a box) has no overlap
+	if !box.IntersectsBox(l.Box()) { return Disjoint }
+
+	// If either endpoint is in the box, we're containing or straddling.
+	sInside,eInside := box.Contains(l.From), box.Contains(l.To)
+
+	// r2 is the line. If any of it is inside, figure out the line's relation to the box
+	if sInside && eInside { return OverlapR2IsContained }
+	if sInside            { return OverlapR2StraddlesEnd }
+	if eInside            { return OverlapR2StraddlesStart }
+	
+	// Else: we know the boxes overlap, but both line points are outside of it; if the line
+	// has a (bounded) intersection with any edge of the box, then we deem the box to be
+	// contained by the line.
+	if _,isect := box.BottomSide().Intersects(l); isect { return OverlapR2Contains }
+	if _,isect := box.LeftSide().Intersects(l); isect { return OverlapR2Contains }
+	if _,isect := box.RightSide().Intersects(l); isect { return OverlapR2Contains }
+	if _,isect := box.TopSide().Intersects(l); isect { return OverlapR2Contains }
+	
+	return Disjoint
+}
+
 
 func (box LatlongBox)IntersectsAltitude(alt int64) bool {
 	if box.Floor > 0 && alt < box.Floor { return false }

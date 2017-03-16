@@ -2,7 +2,6 @@ package geo
 // go test -v github.com/skypies/geo
 
 import(
-	"fmt"
 	"testing"
 	"time"
 )
@@ -76,7 +75,7 @@ func TestCompareBoxSliceBasicZigzag(t *testing.T) {
 		b2 := timeSeqToBoxSlice(vals[1])
 		expected := (vals[2][0] > 0)
 		overlaps,conf,debug := CompareBoxSlices(&b1,&b2)
-		fmt.Printf("** Debug (%v,%.2f):-\n%s\n", overlaps, conf, debug)
+		//fmt.Printf("** Debug (%v,%.2f):-\n%s\n", overlaps, conf, debug)
 		if overlaps != expected {
 			t.Errorf("%,1f\n%s\n[% d] overlap said %v, expected %v", conf, debug, i, overlaps, expected)
 		}

@@ -169,6 +169,7 @@ func (l1 LatlongLine)IntersectsUnbounded(l2 LatlongLine) (Latlong, bool) {
 // }}}
 // {{{ l.Intersects
 
+// Returns point of intersection (may be invalid), and bool stating if intersection occurred
 func (l1 LatlongLine)Intersects(l2 LatlongLine) (Latlong, bool) {
 	pos,parallel := l1.intersectByLineEquations(l2)
 

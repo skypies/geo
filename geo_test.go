@@ -1,7 +1,6 @@
 package geo
 // go test -v github.com/skypies/geo
 
-import "fmt"
 import "math"
 import "testing"
 
@@ -166,14 +165,14 @@ func TestClosestDistance(t *testing.T) {
 	for i,vals := range closestDistance {
 		lFrom,lTo,pos := Latlong{vals[0],vals[1]}, Latlong{vals[2],vals[3]}, Latlong{vals[4],vals[5]}
 		line := lFrom.BuildLine(lTo)
-		perp := line.PerpendicularTo(pos)
-		closestPoint,parallel := line.intersectByLineEquations(perp)
+		//perp := line.PerpendicularTo(pos)
+		//closestPoint,parallel := line.intersectByLineEquations(perp)
 		dist := line.ClosestDistance(pos)
 		if math.Abs(dist - vals[6]) > 0.001 {
 			t.Errorf("[%d] dist was %f, expected %f", i, dist, vals[6])
 		}
-		fmt.Printf("Line:%s, pos    :%s\nPerp:%s, closest:%s (parallel=%v)\ndist=%.2f\n--\n",
-			line, pos, perp, closestPoint, parallel, dist)
+		//fmt.Printf("Line:%s, pos    :%s\nPerp:%s, closest:%s (parallel=%v)\ndist=%.2f\n--\n",
+		//	line, pos, perp, closestPoint, parallel, dist)
 	}
 }
 
@@ -186,7 +185,7 @@ func TestDistAlongLine(t *testing.T) {
 		if math.Abs(actual-expected) > 0.001 {
 			t.Errorf("[%d] distalongline was %f, expected %f", i, actual, expected)
 		}
-		fmt.Printf("Line:%s, pos:%s, dist:%.3f\n", line, pos, actual)
+		// fmt.Printf("Line:%s, pos:%s, dist:%.3f\n", line, pos, actual)
 	}
 }
 

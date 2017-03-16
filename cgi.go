@@ -3,8 +3,10 @@ package geo
 import(
 	"fmt"
 	"net/http"
+	"net/url"
 	"strconv"
 	"strings"
+	"github.com/skypies/util/widget"
 )
 
 // cloned from util/widget
@@ -63,5 +65,22 @@ func (box LatlongBox)ToCGIArgs(stem string) string {
 
 
 func (nl NamedLatlong)ToCGIArgs(stem string) string {
-	return fmt.Sprintf("%s_name=%s&%s", stem, nl.Name, nl.Latlong.ToCGIArgs(stem))
+	v := url.Values{}
+	widget.AddPrefixedValues(v, nl.Values(), stem)
+	return v.Encode()
+}
+
+func (pos Latlong)Values() url.Values {
+	v := url.Values{}
+	v.Set("lat", fmt.Sprintf("%.5f", pos.Lat)) 
+	v.Set("long", fmt.Sprintf("%.5f", pos.Long)) 
+	return v
+}
+
+// you'll want widget.AddPrefixedValues(v, nl.Values(), "mystem")
+func (nl NamedLatlong)Values() url.Values {
+	v := url.Values{}
+	v.Set("name", nl.Name)
+	widget.AddValues(v, nl.Latlong.Values())
+	return v
 }
