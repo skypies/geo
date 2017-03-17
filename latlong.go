@@ -51,6 +51,14 @@ func (from Latlong)BearingTowards(to Latlong) float64 {
 	return forwardAzimuth(from.Long,from.Lat,  to.Long,to.Lat)
 }
 
+func (from Latlong)MoveKM(heading, distanceKM float64) Latlong {
+	long,lat := move(from.Long, from.Lat, heading, distanceKM)
+	return Latlong{Lat:lat, Long:long}
+}
+func (from Latlong)MoveNM(heading, distanceNM float64) Latlong {
+	return from.MoveKM(heading, distanceNM * KNauticalMilePerKM)
+}
+	
 func (at Latlong)MapsUrl() string {
 	return fmt.Sprintf("https://www.google.com/maps/@%.6f,%.6f,9z", at.Lat, at.Long)
 }

@@ -32,7 +32,7 @@ func haversine(lonFrom float64, latFrom float64, lonTo float64, latTo float64) f
 
 // Computes the intitial bearing to head from 1 to 2 in a 'straight line great circle'
 func forwardAzimuth(lon1,lat1 float64, lon2,lat2 float64) float64 {
-	lon1R,lat1R := (lon1 * (math.Pi / 180.0)), (lat1 * (math.Pi / 180.0))
+	lon1R,lat1R := (lon1 * (math.Pi / 180.0)), (lat1 * (math.Pi / 180.0)) // To radians
 	lon2R,lat2R := (lon2 * (math.Pi / 180.0)), (lat2 * (math.Pi / 180.0))
 
 	y := math.Sin(lon2R-lon1R) * math.Cos(lat2R)
@@ -42,6 +42,31 @@ func forwardAzimuth(lon1,lat1 float64, lon2,lat2 float64) float64 {
 	bearing := math.Atan2(y, x) * (180.0 / math.Pi)
 	return math.Mod(bearing+360.0, 360.0)
 }
+
+// Computes a new position, given a start position, a heading, and a distance. Expects
+// latlongs in degrees.
+func move(lon1, lat1, bearing, distanceKM float64) (float64,float64) {
+	lon1R := lon1 * (math.Pi / 180.0)
+	lat1R := lat1 * (math.Pi / 180.0) // To radians
+
+	bearing = math.Mod(bearing+360, 360) * (math.Pi / 180.0)
+	
+	lat2R := math.Asin(
+		math.Sin(lat1R) * math.Cos(distanceKM/earthRadiusKM) +
+	  math.Cos(lat1R) * math.Sin(distanceKM/earthRadiusKM) * math.Cos(bearing) )
+	
+	lon2R := lon1R + math.Atan2(
+		math.Sin(bearing) * math.Sin(distanceKM/earthRadiusKM) * math.Cos(lat1R),
+		math.Cos(distanceKM/earthRadiusKM) - math.Sin(lat1R) * math.Sin(lat2R) )
+
+	lon2 := lon2R * (180.0 / math.Pi)
+	lat2 := lat2R * (180.0 / math.Pi)
+	
+	lon2 = math.Mod((lon2+540.0), 360.0) - 180.0 // normalize to [-180,180]
+
+	return lon2,lat2
+}
+
 
 // {{{ -------------------------={ E N D }=----------------------------------
 

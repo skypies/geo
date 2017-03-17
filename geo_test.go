@@ -1,8 +1,11 @@
 package geo
 // go test -v github.com/skypies/geo
 
-import "math"
-import "testing"
+import (
+	"fmt"
+	"math"
+	"testing"
+)
 
 const (
 	kLatSFO  = 37.6188172
@@ -188,6 +191,53 @@ func TestDistAlongLine(t *testing.T) {
 		// fmt.Printf("Line:%s, pos:%s, dist:%.3f\n", line, pos, actual)
 	}
 }
+
+
+
+func degstr(f float64) string {
+	deg := int(f)
+	minf := math.Abs(float64(deg) - f) * 60.0
+	min := int(minf)
+	sec := (minf - float64(min)) * 60.0
+
+	return fmt.Sprintf("% 3d°%02d'%02.0f\"", deg, min, sec)
+}
+func (p Latlong)DegStr() string {
+	return fmt.Sprintf("(%sN, %sE)", degstr(p.Lat), degstr(p.Long))
+}
+
+func (p Latlong)Eq(q Latlong) bool {
+	if math.Abs(p.Lat - q.Lat) > 0.000001 { return false }
+	if math.Abs(p.Long - q.Long) > 0.000001 { return false }
+	return true
+}
+
+//	func move(lon1, lat1, heading, distanceKM float64) (lon2, lat2 float64) {
+func TestMove(t *testing.T) {
+	tests := []struct{
+		From Latlong
+		Heading, Distance float64
+		Expected Latlong
+	}{
+		// Simple tests - north, east, south, then west.
+		// Sanity checked vs. http://www.movable-type.co.uk/scripts/latlong.html
+		{Latlong{36,-120},    0, 100, Latlong{36.899322, -120}},
+		{Latlong{36,-120},   90, 100, Latlong{35.994872, -118.888426}},
+		{Latlong{36,-120},  180, 100, Latlong{35.100678, -120}},
+		{Latlong{36,-120},  270, 100, Latlong{35.994872, -121.111574}},
+	}
+
+	
+	
+	for i,test := range tests {
+		actual := test.From.MoveKM(test.Heading, test.Distance)
+		if !actual.Eq(test.Expected) {
+			t.Errorf("test [% 2d], %s+(%3.0fdeg,%.0fKM) - expected %s, got %s\n",
+				i, test.From, test.Heading, test.Distance, test.Expected, actual)
+		}
+	}
+}
+
 
 // {{{ -------------------------={ E N D }=----------------------------------
 
