@@ -227,8 +227,6 @@ func TestMove(t *testing.T) {
 		{Latlong{36,-120},  270, 100, Latlong{35.994872, -121.111574}},
 	}
 
-	
-	
 	for i,test := range tests {
 		actual := test.From.MoveKM(test.Heading, test.Distance)
 		if !actual.Eq(test.Expected) {

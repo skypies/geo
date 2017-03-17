@@ -17,6 +17,8 @@ const (
 )
 
 func NM2KM (nm float64) float64 { return nm / KNauticalMilePerKM }
+// NM per hour to meters per second
+func NMph2mps(f float64) float64 { return f * 0.514444444 }
 
 // The haversine formula will calculate the spherical distance as the crow flies 
 // between lat and lon for two given points, in km
