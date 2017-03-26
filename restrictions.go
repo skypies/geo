@@ -9,6 +9,7 @@ func init() {
 	gob.Register(new(DebugLog))
 	gob.Register(SquareBoxRestriction{})
 	gob.Register(VerticalPlaneRestriction{})
+	gob.Register(PolygonRestriction{})
 }
 
 type DebugLog string
@@ -111,5 +112,49 @@ func (vp VerticalPlaneRestriction)OverlapsAltitude(a int64) OverlapOutcome {
 	// r2 is the altitude; so if too low, it comes 'before' the restriction
 	if vp.AltitudeMin > 0 &&  a < vp.AltitudeMin { return DisjointR2ComesBefore }
 	if vp.AltitudeMax > 0 &&  a > vp.AltitudeMax { return DisjointR2ComesAfter }
+	return OverlapR2IsContained
+}
+
+
+// PolygonRestricton fully implements geo.Restrictor
+type PolygonRestriction struct {
+	*Polygon
+	SideKM                   float64
+	AltitudeMin,AltitudeMax  int64
+	IsExcluding              bool
+	Debugger                 // embed; populate with ptr rcvr e.g. pr.Debugger = new(geo.DebugLog)
+}
+func (pr PolygonRestriction)String() string {
+	str := fmt.Sprintf("%d-gon ~%.2fKM @ %s", len(pr.Polygon.Path.Points()),
+		pr.Polygon.ApproxRadiusKM(), pr.Polygon.Centroid())
+
+	if pr.AltitudeMin > 0 || pr.AltitudeMax > 0 {
+		str += fmt.Sprintf(" [%d,", pr.AltitudeMin)
+		if pr.AltitudeMax>0 { str += fmt.Sprintf("%d",pr.AltitudeMax) } else { str += "-" }
+		str += "]ft"
+	}
+
+	if pr.IsExcluding { str += "(EXCLUDES)" }
+	return str
+}
+
+func (pr PolygonRestriction)IsExclusion() bool { return pr.IsExcluding }
+func (pr PolygonRestriction)IsNil() bool {
+	return pr.Polygon == nil || len(pr.Polygon.Path.Points()) < 3
+}
+
+func (pr PolygonRestriction)ToCircles() []LatlongCircle { return nil }
+func (pr PolygonRestriction)ToLines() []LatlongLine { return pr.Polygon.ToLines() }
+
+func (pr PolygonRestriction)BoundingBox() LatlongBox { return LatlongBoxFromBound(pr.Bound()) }
+func (pr PolygonRestriction)CanContain() bool { return true }
+//func (pr PolygonRestriction)Contains(pos Latlong) bool { return pr.Polygon.Contains(pos) }
+//func (pr PolygonRestriction)OverlapsLine(ln LatlongLine) OverlapOutcome {
+//	return pr.Box(pr.SideKM,pr.SideKM).OverlapsLine(ln)
+//}
+func (pr PolygonRestriction)OverlapsAltitude(a int64) OverlapOutcome {
+	// r2 is the altitude; so if too low, it comes 'before' the restriction
+	if pr.AltitudeMin > 0 &&  a < pr.AltitudeMin { return DisjointR2ComesBefore }
+	if pr.AltitudeMax > 0 &&  a > pr.AltitudeMax { return DisjointR2ComesAfter }
 	return OverlapR2IsContained
 }
