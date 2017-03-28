@@ -2,12 +2,12 @@ package geo
 
 import(
 	"fmt"
-	"math"
 	pmgeo "github.com/paulmach/go.geo"  // https://godoc.org/github.com/paulmach/go.geo
 )
 
 type Polygon struct {
 	*pmgeo.Path
+	closedPath *pmgeo.Path // transient
 }
 func NewPolygon() *Polygon { return &Polygon{ Path: pmgeo.NewPath() } }
 
@@ -16,10 +16,33 @@ func (poly *Polygon)String() string {
 		len(poly.Path.Points()), poly.Centroid(), poly.ApproxRadiusKM())
 }
 
+func (poly *Polygon)setClosedPath() {
+	if poly.closedPath != nil {
+		return
+	}
+	pts := poly.Path.Points()
+	pts = append(pts, pts[0]) // Close the path
+
+	poly.closedPath = pmgeo.NewPath()
+	poly.closedPath.PointSet = pts
+}
+
 func (poly *Polygon)GetPoints() []Latlong {
 	ret := []Latlong{}
 	for _,pt := range poly.Path.Points() {
 		ret = append(ret, LatlongFromPt(&pt))
+	}
+	return ret
+}
+
+// A slice of sides, in clockwise order, where each side is represented
+// as a slice of two points {Start, End}
+func (poly *Polygon)GetSides() [][]Latlong {
+	poly.setClosedPath()
+	pts := poly.closedPath.Points()
+	ret := [][]Latlong{}
+	for i:=1; i<len(pts); i++ {
+		ret = append(ret, []Latlong{LatlongFromPt(&pts[i-1]), LatlongFromPt(&pts[i])})
 	}
 	return ret
 }
@@ -58,8 +81,11 @@ func (poly *Polygon)AddPoint(ll Latlong) {
 // Note; when a line intersects a vertex, it may be found to intersect lines on both sides,
 // and so may contribute that vertex point more than once. So we dedupe.
 func (poly *Polygon)IntersectsLine(l LatlongLine) ([]Latlong, bool) {
+	poly.setClosedPath()
+
 	ret := []Latlong{}
-	pts,_ := poly.IntersectionLine(l.Ln())
+	pts,_ := poly.closedPath.IntersectionLine(l.Ln())
+
 	deduped := []*pmgeo.Point{}
 	for i:=0; i<len(pts); i++ {
 		isDupe := false
@@ -72,10 +98,8 @@ func (poly *Polygon)IntersectsLine(l LatlongLine) ([]Latlong, bool) {
 	}
 
 	for _,pt := range deduped {
-		// We also see infinte points from time to time :/
-		if math.IsInf(pt.Lat(), 0) || math.IsInf(pt.Lng(), 0) {
-			continue
-		}
+		// infinite points show up when l is collinear with a segment in the path
+		//if math.IsInf(pt.Lat(), 0) || math.IsInf(pt.Lng(), 0) { continue }
 		ret = append(ret, LatlongFromPt(pt))
 	}
 	return ret, (len(ret)>0)
@@ -127,13 +151,11 @@ func (p *Polygon)Contains(ll Latlong) bool {
 
 
 // Implement MapRenderer
-func (p *Polygon)ToCircles() []LatlongCircle { return nil }
-func (p *Polygon)ToLines() []LatlongLine {
+func (poly *Polygon)ToCircles() []LatlongCircle { return nil }
+func (poly *Polygon)ToLines() []LatlongLine {
 	ret := []LatlongLine{}
-	pts := p.Path.Points()
-	pts = append(pts, pts[0]) // Lazy wraparound
-	for i:=1; i<len(pts); i++ {
-		ret = append(ret, LatlongFromPt(&pts[i-1]).LineTo(LatlongFromPt(&pts[i])))
+	for _,pair := range poly.GetSides() {
+		ret = append(ret, pair[0].LineTo(pair[1]))
 	}
 	return ret
 }

@@ -84,3 +84,22 @@ func (nl NamedLatlong)Values() url.Values {
 	widget.AddValues(v, nl.Latlong.Values())
 	return v
 }
+
+func (ln LatlongLine)Values() url.Values {
+	v := url.Values{}
+	widget.AddPrefixedValues(v, ln.From.Values(), "startpos")
+	widget.AddPrefixedValues(v, ln.To.Values(), "endpos")
+	return v
+}
+func (ln LatlongLine)ToCGIArgs(stem string) string {
+	v := url.Values{}
+	widget.AddPrefixedValues(v, ln.Values(), stem)
+	return v.Encode()
+}
+
+// If fields absent or blank, returns {0.0, 0.0} -> {0.0, 0.0}
+func FormValueLatlongLine(r *http.Request, stem string) LatlongLine {
+	s := FormValueLatlong(r, stem+"_startpos")
+	e := FormValueLatlong(r, stem+"_endpos")
+	return s.LineTo(e)
+}

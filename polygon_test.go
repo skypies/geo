@@ -25,7 +25,7 @@ func TestPolygon(t *testing.T) {
 		{Latlong{ -5,  5}, Latlong{ 15,  5}, 2},
 		// Corner tests
 		{Latlong{  0,  0}, Latlong{ 10, 10}, 2},
-		{Latlong{ 10, 10}, Latlong{ 10, 20}, 1},
+		{Latlong{ 10, 10}, Latlong{ 10, 20}, 2}, // We get two, as the line is collinear with poly
 	}
 
 	for i,test := range intersectionTests {
@@ -39,6 +39,7 @@ func TestPolygon(t *testing.T) {
 		}
 	}
 }	
+
 /*
 func TestContains(t *testing.T) {
 	poly := NewPolygon()
@@ -71,6 +72,7 @@ func TestContains(t *testing.T) {
 	}
 }
 */
+
 func TestOverlapsLine(t *testing.T) {
 	poly := NewPolygon()
 	poly.AddPoint(Latlong{  0,  0})
@@ -98,4 +100,3 @@ func TestOverlapsLine(t *testing.T) {
 		}
 	}
 }
-
