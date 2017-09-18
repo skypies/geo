@@ -21,6 +21,8 @@ func (box LatlongBox)String() string {
 	return str
 }
 
+func (box LatlongBox)IsNil() bool { return box.SW.IsNil() || box.NE.IsNil() }
+
 // Derive the other two corners on demand
 func (box LatlongBox)SE() Latlong { return Latlong{Lat:box.SW.Lat , Long:box.NE.Long} }
 func (box LatlongBox)NW() Latlong { return Latlong{Lat:box.NE.Lat , Long:box.SW.Long} }
