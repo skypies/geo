@@ -28,6 +28,18 @@ var (
 							 
 	// http://www.myaviationinfo.com/FixState.php?FixState=CALIFORNIA
 	KFixes = map[string]geo.Latlong{
+		// SERFR3 (proposed changes)
+		//SERFR 360405.90N / 1212152.79W geo.Latlong{Lat:36.0683056, Long:-121.3646639} [unchanged]
+		//NRRLI 362944.16N / 1214157.84W geo.Latlong{Lat:36.4956000, Long:-121.6994000} [unchanged]
+		//WWAVS 364429.51N / 1215339.24W geo.Latlong{Lat:36.7415306, Long:-121.8942333} [unchanged]
+		//EPICK 365702.96N / 1215709.62W geo.Latlong{Lat:36.9508222, Long:-121.9526722} [unchanged]
+		//NARWL 371629.21N / 1220445.46W geo.Latlong{Lat:37.2747806, Long:-122.0792944} [NEW]
+		//EDDYY 372229.65N / 1220707.50W geo.Latlong{Lat:37.3749028, Long:-122.1187500} [MOVED]
+		"NARWL-SERFR3": geo.Latlong{37.2747806, -122.0792944},
+		"EDDYY-SERFR3": geo.Latlong{37.3749028, -122.1187500},
+
+		// EPICK 365702.96N / 1215709.62W
+		
 		// SERFR2 & WWAVS1
 		"SERFR": geo.Latlong{36.0683056, -121.3646639},
 		"NRRLI": geo.Latlong{36.4956000, -121.6994000},
