@@ -17,6 +17,7 @@ func (ll Latlong)String() string { return fmt.Sprintf("(%.4f,%.4f)", ll.Lat, ll.
 //   [36.7415306, -121.8942333] - google maps style full decimals
 //   [36°57'02.96"N, 121°57'09.62"W] - traditional degrees / minutes / seconds
 //   [365702.96N / 1215709.62W] - FAA style concatenated ("DEG"+"MIN"+"SEC.00")
+//   [37-10-35.680N / 122-00-29.950W] - from fltplan.com
 // returns a nil latlong upon parse failure
 func NewLatlong(in string) Latlong {
 	coordRe := `[-0-9.°'\"NESW]{5,16}`
@@ -28,6 +29,7 @@ func NewLatlong(in string) Latlong {
 			Long:parseCoord(match[2]),
 		}
 	}
+
 	return Latlong{}
 }
 
